@@ -18,7 +18,7 @@ export class BlizzardApi {
   private async authenticate(): Promise<string> {
     const now = Date.now();
     if (this.token && now < this.tokenExpiration) {
-      return this.token;
+      return this.token ?? '';
     }
 
     const response = await axios.post(
