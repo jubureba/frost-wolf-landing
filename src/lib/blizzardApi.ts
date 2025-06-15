@@ -35,7 +35,7 @@ export class BlizzardApi {
     this.token = response.data.access_token;
     this.tokenExpiration = now + response.data.expires_in * 1000 - 60000;
 
-    return this.token;
+    return this.token ?? '';
   }
 
   async request(endpoint: string, namespace: 'static' | 'dynamic', locale = 'pt_BR') {
