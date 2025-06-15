@@ -28,7 +28,7 @@ const blizzard = new BlizzardApi(
 )
 blizzard.region = 'us'
 
-async function enrichJogador(blizzard: BlizzardApi, jogador: any) {
+async function enrichJogador(blizzard: BlizzardApi, jogador: Jogador) {
   try {
     const profile = await blizzard.getCharacterProfile(jogador.realm.toLowerCase(), jogador.nome)
     const avatar = await blizzard.getCharacterAvatar(jogador.realm.toLowerCase(), jogador.nome)

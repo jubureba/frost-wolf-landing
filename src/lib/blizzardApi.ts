@@ -73,23 +73,18 @@ export class BlizzardApi {
   }
 
   async getCharacterAvatar(realm: string, characterName: string) {
-    const token = await this.authenticate();
-    const url = `https://${this.region}.api.blizzard.com/profile/wow/character/${realm.toLowerCase()}/${characterName.toLowerCase()}/character-media`;
+  const token = await this.authenticate();
+  const url = `https://${this.region}.api.blizzard.com/profile/wow/character/${realm.toLowerCase()}/${characterName.toLowerCase()}/character-media`;
 
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params: {
-        namespace: `profile-${this.region}`,
-        locale: 'pt_BR',
-      },
-    });
+  const response = await axios.get(url, {
+    headers: { Authorization: `Bearer ${token}` },
+    params: { namespace: `profile-${this.region}`, locale: 'pt_BR' },
+  });
 
-    const assets = response.data.assets;
-    const avatar = assets.find((a: any) => a.key === 'avatar')?.value || null;
-    return avatar;
-  }
+  const assets: Asset[] = response.data.assets;
+  const avatar = assets.find((a) => a.key === 'avatar')?.value || null;
+  return avatar;
+}
 
   async getClassData(classId: number) {
     const endpoint = `/data/wow/playable-class/${classId}`;
@@ -109,7 +104,9 @@ export class BlizzardApi {
         },
       });
 
-      icon = mediaData.data.assets.find((a: any) => a.key === 'icon')?.value ?? '';
+      const assets: Asset[] = mediaData.data.assets;
+      icon = assets.find((a) => a.key === 'icon')?.value ?? '';
+
     }
 
     const color = this.getClassColor(classData.name.en_US);
