@@ -8,7 +8,7 @@ import {
   updateCoreField,
   addPlayerToCore,
   removePlayerFromCore,
-} from "@/lib/firestoreService";
+} from "../lib/firestoreService";
 
 type CoreEditorProps = {
   core: Core;

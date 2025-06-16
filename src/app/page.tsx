@@ -1,7 +1,7 @@
 import { getCores, saveCore } from '../lib/firestoreService';
 import { CoreWithEditor } from '../components/CoreWithEditor';
-import { BlizzardHttpClient } from "@/lib/BlizzardHttpClient";
-import { BlizzardApi } from "@/lib/BlizzardApi";
+import { BlizzardHttpClient } from "../lib/BlizzardHttpClient";
+import { BlizzardApi } from "../lib/BlizzardApi";
 import { UserStatus } from '../components/UserStatus';
 
 const client = new BlizzardHttpClient(
