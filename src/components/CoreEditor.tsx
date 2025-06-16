@@ -1,4 +1,3 @@
-//coreEditor.tsx
 "use client";
 
 import { useState } from "react";
@@ -15,24 +14,17 @@ type CoreEditorProps = {
 };
 
 export function CoreEditor({ core }: CoreEditorProps) {
-  // Estado para cada campo editável
   const [nome, setNome] = useState(core.nome);
   const [informacoes, setInformacoes] = useState(core.informacoes || "");
   const [dias, setDias] = useState(core.dias || "");
   const [precisaDe, setPrecisaDe] = useState(core.precisaDe || "");
   const [bossAtual, setBossAtual] = useState(core.bossAtual || "");
-
-  // Composição atual, pode ser editada (lista de jogadores)
   const [composicao, setComposicao] = useState<Player[]>(core.composicaoAtual || []);
-
-  // Estados para inputs de adicionar jogador
   const [novoNome, setNovoNome] = useState("");
   const [novoRealm, setNovoRealm] = useState("");
-
   const [loading, setLoading] = useState(false);
 
-  // Função para atualizar um campo do Core no Firestore
-  async function salvarCampoCampo() {
+  async function salvarCore() {
     setLoading(true);
     try {
       await updateCoreField(core.id, {
@@ -52,7 +44,6 @@ export function CoreEditor({ core }: CoreEditorProps) {
     }
   }
 
-  // Função para adicionar novo jogador à composição
   async function adicionarJogador() {
     if (!novoNome.trim() || !novoRealm.trim()) {
       alert("Preencha nome e reino para adicionar jogador.");
@@ -60,7 +51,6 @@ export function CoreEditor({ core }: CoreEditorProps) {
     }
     const player: Player = { nome: novoNome.trim(), realm: novoRealm.trim() };
 
-    // Evita duplicação
     if (composicao.some((p) => p.nome === player.nome && p.realm === player.realm)) {
       alert("Jogador já está na composição.");
       return;
@@ -80,7 +70,6 @@ export function CoreEditor({ core }: CoreEditorProps) {
     }
   }
 
-  // Função para remover jogador da composição
   async function removerJogador(player: Player) {
     setLoading(true);
     try {
@@ -96,7 +85,6 @@ export function CoreEditor({ core }: CoreEditorProps) {
     }
   }
 
-  // Função para editar jogador inline (alterar nome ou realm)
   function editarJogador(index: number, campo: "nome" | "realm", valor: string) {
     setComposicao((prev) => {
       const novaComposicao = [...prev];
@@ -105,13 +93,10 @@ export function CoreEditor({ core }: CoreEditorProps) {
     });
   }
 
-  // Função para salvar a lista de jogadores inteira (ex: após edição inline)
   async function salvarComposicao() {
     setLoading(true);
     try {
-      await updateCoreField(core.id, {
-        composicaoAtual: composicao,
-      });
+      await updateCoreField(core.id, { composicaoAtual: composicao });
       alert("Composição atualizada com sucesso!");
     } catch (error) {
       console.error(error);
@@ -122,146 +107,117 @@ export function CoreEditor({ core }: CoreEditorProps) {
   }
 
   return (
-    <div className="bg-gradient-to-br from-[#2a004d] to-[#1a0033] rounded-xl p-6 border border-purple-700 shadow-md max-w-3xl mx-auto">
-      <h2 className="text-2xl font-bold text-purple-200 mb-6">Editar Core: {core.nome}</h2>
+    <div className="max-w-4xl mx-auto p-8 sm:p-10 bg-[#1f1f1f] rounded-2xl border border-[#2a2a2a] shadow-lg text-white font-nunito">
+      <h2 className="text-2xl sm:text-3xl font-semibold mb-8 text-white">
+        Editar Core: <span className="text-lime-400 font-bold">{core.nome}</span>
+      </h2>
 
-      <div className="space-y-4 mb-6">
-        {/* Campos texto simples */}
-        <div>
-          <label className="block text-purple-300 mb-1 font-semibold">Nome do Core</label>
-          <input
-            type="text"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            disabled={loading}
-            className="w-full px-3 py-2 rounded-lg bg-purple-950 text-purple-100 border border-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+        {[{ label: "Nome do Core", value: nome, setter: setNome },
+          { label: "Dias", value: dias, setter: setDias },
+          { label: "Precisa de", value: precisaDe, setter: setPrecisaDe },
+          { label: "Boss Atual", value: bossAtual, setter: setBossAtual },
+        ].map(({ label, value, setter }) => (
+          <div key={label}>
+            <label className="block text-sm font-medium text-gray-300 mb-1">{label}</label>
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => setter(e.target.value)}
+              disabled={loading}
+              className="w-full rounded-xl border border-[#444] bg-[#2a2a2a] px-4 py-2 text-sm text-white focus:ring-2 focus:ring-lime-500 focus:outline-none transition"
+              placeholder={label}
+            />
+          </div>
+        ))}
 
-        <div>
-          <label className="block text-purple-300 mb-1 font-semibold">Informações</label>
+        <div className="sm:col-span-2">
+          <label className="block text-sm font-medium text-gray-300 mb-1">Informações</label>
           <textarea
             value={informacoes}
             onChange={(e) => setInformacoes(e.target.value)}
             disabled={loading}
             rows={3}
-            className="w-full px-3 py-2 rounded-lg bg-purple-950 text-purple-100 border border-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+            className="w-full rounded-xl border border-[#444] bg-[#2a2a2a] px-4 py-2 text-sm text-white focus:ring-2 focus:ring-lime-500 focus:outline-none transition resize-none"
+            placeholder="Digite informações adicionais..."
           />
         </div>
-
-        <div>
-          <label className="block text-purple-300 mb-1 font-semibold">Dias</label>
-          <input
-            type="text"
-            value={dias}
-            onChange={(e) => setDias(e.target.value)}
-            disabled={loading}
-            className="w-full px-3 py-2 rounded-lg bg-purple-950 text-purple-100 border border-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-purple-300 mb-1 font-semibold">Precisa de</label>
-          <input
-            type="text"
-            value={precisaDe}
-            onChange={(e) => setPrecisaDe(e.target.value)}
-            disabled={loading}
-            className="w-full px-3 py-2 rounded-lg bg-purple-950 text-purple-100 border border-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-purple-300 mb-1 font-semibold">Boss Atual</label>
-          <input
-            type="text"
-            value={bossAtual}
-            onChange={(e) => setBossAtual(e.target.value)}
-            disabled={loading}
-            className="w-full px-3 py-2 rounded-lg bg-purple-950 text-purple-100 border border-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-        </div>
-
-        <button
-          onClick={salvarCampoCampo}
-          disabled={loading}
-          className={`bg-purple-700 hover:bg-purple-800 text-white font-semibold px-4 py-2 rounded-lg transition ${
-            loading ? "opacity-60 cursor-not-allowed" : ""
-          }`}
-        >
-          {loading ? "Salvando..." : "Salvar Core"}
-        </button>
       </div>
 
-      <hr className="border-purple-700 mb-6" />
+      <button
+        onClick={salvarCore}
+        disabled={loading}
+        className={`w-full py-3 rounded-xl bg-lime-600 text-white font-semibold hover:bg-lime-700 transition ${
+          loading ? "opacity-50 cursor-not-allowed" : ""
+        }`}
+      >
+        {loading ? "Salvando..." : "Salvar Core"}
+      </button>
 
-      {/* Composição - jogadores */}
+      <hr className="my-10 border-[#333]" />
+
       <div>
-        <h3 className="text-xl text-purple-200 font-semibold mb-4">Composição Atual</h3>
+        <h3 className="text-xl font-semibold mb-6 text-white">Composição Atual</h3>
 
         {composicao.length === 0 && (
-          <p className="text-sm text-purple-400 italic mb-4">Nenhum jogador adicionado.</p>
+          <p className="text-gray-400 italic mb-6">Nenhum jogador adicionado.</p>
         )}
 
-        <ul className="space-y-2 max-h-64 overflow-y-auto mb-4">
+        <ul className="space-y-4 mb-8">
           {composicao.map((player, idx) => (
             <li
               key={`${player.nome}-${player.realm}`}
-              className="flex items-center space-x-3 bg-purple-950 px-3 py-2 rounded-md border border-purple-700"
+              className="flex flex-col sm:flex-row gap-3 sm:items-center bg-[#2a2a2a] border border-[#444] px-4 py-3 rounded-xl shadow-sm"
             >
               <input
                 type="text"
                 value={player.nome}
                 onChange={(e) => editarJogador(idx, "nome", e.target.value)}
                 disabled={loading}
-                className="flex-1 bg-transparent border border-purple-600 rounded px-2 py-1 text-purple-100 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="flex-1 rounded-xl border border-[#555] bg-[#1f1f1f] px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                placeholder="Nome"
               />
               <input
                 type="text"
                 value={player.realm}
                 onChange={(e) => editarJogador(idx, "realm", e.target.value)}
                 disabled={loading}
-                className="flex-1 bg-transparent border border-purple-600 rounded px-2 py-1 text-purple-100 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                className="flex-1 rounded-xl border border-[#555] bg-[#1f1f1f] px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                placeholder="Reino"
               />
               <button
                 onClick={() => removerJogador(player)}
                 disabled={loading}
-                className={`text-red-400 hover:text-red-600 font-semibold ${
-                  loading ? "cursor-not-allowed text-red-300" : ""
-                }`}
-                title="Remover jogador"
+                className="text-red-500 hover:text-red-600 text-xl font-bold"
+                title="Remover"
               >
-                ×
+                &times;
               </button>
             </li>
           ))}
         </ul>
 
-        <div className="flex flex-wrap gap-3 mb-4">
+        <div className="flex flex-wrap gap-4 mb-6">
           <input
             placeholder="Nome"
             value={novoNome}
             onChange={(e) => setNovoNome(e.target.value)}
             disabled={loading}
-            className="flex-1 min-w-[120px] px-3 py-2 rounded-lg bg-purple-950 text-purple-100 placeholder-purple-500 border border-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="flex-1 min-w-[140px] rounded-xl border border-[#555] bg-[#1f1f1f] px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
           <input
             placeholder="Reino"
             value={novoRealm}
             onChange={(e) => setNovoRealm(e.target.value)}
             disabled={loading}
-            className="flex-1 min-w-[120px] px-3 py-2 rounded-lg bg-purple-950 text-purple-100 placeholder-purple-500 border border-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="flex-1 min-w-[140px] rounded-xl border border-[#555] bg-[#1f1f1f] px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
           <button
             onClick={adicionarJogador}
             disabled={loading}
-            className={`${
-              loading
-                ? "bg-green-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
-            } px-4 py-2 rounded-lg text-white font-medium transition-all`}
+            className="px-6 py-2 rounded-xl bg-green-600 text-white font-medium hover:bg-green-700 transition disabled:opacity-60"
           >
-            {loading ? "Salvando..." : "Adicionar Jogador"}
+            {loading ? "Adicionando..." : "Adicionar"}
           </button>
         </div>
 
@@ -269,9 +225,7 @@ export function CoreEditor({ core }: CoreEditorProps) {
           <button
             onClick={salvarComposicao}
             disabled={loading}
-            className={`bg-purple-700 hover:bg-purple-800 text-white font-semibold px-4 py-2 rounded-lg transition ${
-              loading ? "opacity-60 cursor-not-allowed" : ""
-            }`}
+            className="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition disabled:opacity-60"
           >
             {loading ? "Salvando..." : "Salvar Composição"}
           </button>

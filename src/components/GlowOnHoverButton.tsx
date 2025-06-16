@@ -3,6 +3,7 @@
 import { auth, googleProvider } from "../lib/firebase";
 import { signInWithPopup } from "firebase/auth";
 import { useState } from "react";
+import { GlowOnHoverButton } from "./GlowButton";
 
 export function LoginGoogleButton() {
   const [loading, setLoading] = useState(false);
@@ -27,14 +28,14 @@ export function LoginGoogleButton() {
 
   return (
     <>
-      <button
-        onClick={login}
-        disabled={loading}
-        className="ml-4 px-3 py-1 rounded bg-purple-600 hover:bg-purple-700 text-sm text-white transition"
-      >
-        {loading ? "Carregando..." : "Entrar com Google"}
-      </button>
-      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+      <GlowOnHoverButton onClick={login} disabled={loading} loading={loading}>
+        {loading ? "Entrando..." : "Entrar"}
+      </GlowOnHoverButton>
+      {error && (
+        <p className="text-red-500 text-sm mt-2">
+          Erro ao fazer login: {error}
+        </p>
+      )}
     </>
   );
 }

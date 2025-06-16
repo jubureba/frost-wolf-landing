@@ -3,6 +3,7 @@ import { CoreWithEditor } from '../components/CoreWithEditor';
 import { BlizzardHttpClient } from "../lib/BlizzardHttpClient";
 import { BlizzardApi } from "../lib/blizzardApi";
 import { UserStatus } from '../components/UserStatus';
+import Image from 'next/image';
 
 const client = new BlizzardHttpClient(
   process.env.BLIZZARD_CLIENT_ID!,
@@ -12,7 +13,6 @@ const client = new BlizzardHttpClient(
 
 const api = new BlizzardApi(client);
 
-// ✅ Server Action pra criar novo Core
 async function handleCriarNovoCore() {
   "use server";
 
@@ -57,28 +57,52 @@ export default async function Home() {
   );
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-black via-[#120026] to-black p-10">
-      <header className="text-center mb-10">
-        <h1 className="text-5xl font-bold mb-3 text-purple-300">Frost Wolf Clan</h1>
-        <p className="text-purple-400">Status dos Cores — Atualizado em tempo real</p>
+    <main className="min-h-screen bg-[#121212] p-4 sm:p-6">
+      {/* Header */}
+      <header className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-3">
+          <Image
+            src="/img/logo.png"
+            alt="Logo Frost Wolf"
+            width={52}
+            height={52}
+            className="rounded-md"
+          />
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-white">Frost Wolf Clan</h1>
+            <p className="text-xs sm:text-sm text-gray-400">Cores de progressão</p>
+          </div>
+        </div>
         <UserStatus />
-
-        {/* 🔥 Botão de criar novo Core */}
-        <form action={handleCriarNovoCore} className="mt-6">
-          <button
-            type="submit"
-            className="bg-green-700 hover:bg-green-800 text-white font-semibold px-6 py-2 rounded-lg transition"
-          >
-            + Criar Novo Core
-          </button>
-        </form>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      {/* Filtros */}
+      <div className="flex gap-6 mb-6 border-b border-[#2a2a2a]">
+        <button className="pb-2 border-b-2 border-purple-600 text-purple-400 font-medium">
+          Cores
+        </button>
+        <button className="pb-2 text-gray-400 hover:text-purple-400 hover:border-b-2 hover:border-purple-600">
+          ...
+        </button>
+      </div>
+
+      {/* Cards dos Cores */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {coresCompletos.map((core) => (
-          <CoreWithEditor key={core.nome} core={core} />
+          <CoreWithEditor key={core.id} core={core} />
         ))}
       </div>
+
+      {/* Botão flutuante */}
+      <form action={handleCriarNovoCore}>
+        <button
+          type="submit"
+          className="fixed bottom-8 right-8 bg-purple-600 hover:bg-purple-700 text-white rounded-full w-14 h-14 text-3xl shadow-lg"
+          title="Criar novo Core"
+        >
+          +
+        </button>
+      </form>
     </main>
   );
 }
