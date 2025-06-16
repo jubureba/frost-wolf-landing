@@ -1,187 +1,117 @@
-import axios from 'axios';
+import { BlizzardHttpClient } from "./BlizzardHttpClient";
 
 export class BlizzardApi {
-  private clientId: string;
-  private clientSecret: string;
-  private token: string | null = null;
-  private tokenExpiration: number = 0;
-  public region: string = 'us';
+  private specRoleCache = new Map<string, "tank" | "healer" | "dps">();
 
-  // Cache simples para evitar requisições repetidas da mesma spec
-  private specRoleCache = new Map<string, 'tank' | 'healer' | 'dps'>();
+  constructor(private client: BlizzardHttpClient) {}
 
-  constructor(clientId: string, clientSecret: string) {
-    this.clientId = clientId;
-    this.clientSecret = clientSecret;
+  async getCharacterProfile(realm: string, name: string) {
+    const url = `https://${this.client.region}.api.blizzard.com/profile/wow/character/${realm.toLowerCase()}/${name.toLowerCase()}`;
+    return this.client.get<CharacterProfileResponse>(url, {
+      namespace: `profile-${this.client.region}`,
+    });
   }
 
-  private async authenticate(): Promise<string> {
-    const now = Date.now();
-    if (this.token && now < this.tokenExpiration) {
-      return this.token ?? '';
-    }
-
-    const response = await axios.post(
-      `https://${this.region}.battle.net/oauth/token`,
-      'grant_type=client_credentials',
-      {
-        auth: {
-          username: this.clientId,
-          password: this.clientSecret,
-        },
-      }
-    );
-
-    this.token = response.data.access_token;
-    this.tokenExpiration = now + response.data.expires_in * 1000 - 60000;
-
-    return this.token ?? '';
-  }
-
-  async request(endpoint: string, namespace: 'static' | 'dynamic', locale = 'pt_BR') {
-    const token = await this.authenticate();
-    const url = `https://${this.region}.api.blizzard.com${endpoint}`;
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params: {
-        namespace: `${namespace}-${this.region}`,
-        locale,
-      },
+  async getCharacterAvatar(realm: string, name: string) {
+    const url = `https://${this.client.region}.api.blizzard.com/profile/wow/character/${realm.toLowerCase()}/${name.toLowerCase()}/character-media`;
+    const res = await this.client.get<CharacterMediaResponse>(url, {
+      namespace: `profile-${this.client.region}`,
     });
 
-    return response.data;
-  }
-
-  async getCharacterProfile(realm: string, characterName: string) {
-    const token = await this.authenticate();
-    const url = `https://${this.region}.api.blizzard.com/profile/wow/character/${realm.toLowerCase()}/${characterName.toLowerCase()}`;
-
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params: {
-        namespace: `profile-${this.region}`,
-        locale: 'pt_BR',
-      },
-    });
-
-    return response.data;
-  }
-
-  async getCharacterAvatar(realm: string, characterName: string) {
-    const token = await this.authenticate();
-    const url = `https://${this.region}.api.blizzard.com/profile/wow/character/${realm.toLowerCase()}/${characterName.toLowerCase()}/character-media`;
-
-    const response = await axios.get(url, {
-      headers: { Authorization: `Bearer ${token}` },
-      params: { namespace: `profile-${this.region}`, locale: 'pt_BR' },
-    });
-
-    const assets: Asset[] = response.data.assets;
-    const avatar = assets.find((a) => a.key === 'avatar')?.value || null;
-    return avatar;
+    return res.assets?.find((a) => a.key === "avatar")?.value ?? null;
   }
 
   async getClassData(classId: number) {
-    const endpoint = `/data/wow/playable-class/${classId}`;
-    const classData = await this.request(endpoint, 'static');
+    const url = `https://${this.client.region}.api.blizzard.com/data/wow/playable-class/${classId}`;
+    const res = await this.client.get<ClassDataResponse>(url, {
+      namespace: `static-${this.client.region}`,
+    });
 
-    const mediaUrl = classData.media?.key?.href;
-    let icon = '';
-
-    if (mediaUrl) {
-      const mediaData = await axios.get(mediaUrl, {
-        headers: {
-          Authorization: `Bearer ${await this.authenticate()}`,
-        },
-        params: {
-          namespace: `static-${this.region}`,
-          locale: 'pt_BR',
-        },
-      });
-
-      const assets: Asset[] = mediaData.data.assets;
-      icon = assets.find((a) => a.key === 'icon')?.value ?? '';
-
-    }
-
-    const color = this.getClassColor(classData.name.en_US);
+    const icon =
+      res.media?.assets?.find((a) => a.key === "icon")?.value ?? "";
+    const color = this.getClassColor(res.name);
 
     return {
-      id: classData.id,
-      name: classData.name.pt_BR,
-      name_en: classData.name.en_US,
+      id: res.id,
+      name: res.name,
+      name_en: res.name,
       icon,
       color,
     };
   }
 
-  getClassColor(classe: string): string {
+  async getSpecRole(href: string): Promise<"tank" | "healer" | "dps" | undefined> {
+    if (this.specRoleCache.has(href)) return this.specRoleCache.get(href);
+
+    const res = await this.client.get<SpecResponse>(href, {
+      namespace: `static-${this.client.region}`,
+    });
+
+    const roleType = res.role?.type?.toLowerCase();
+    const role =
+      roleType === "tank"
+        ? "tank"
+        : roleType === "healer"
+        ? "healer"
+        : roleType === "damage"
+        ? "dps"
+        : undefined;
+
+    if (role) this.specRoleCache.set(href, role);
+    return role;
+  }
+
+  async getCompleteCharacterData(realm: string, name: string) {
+    const [profile, avatar] = await Promise.all([
+      this.getCharacterProfile(realm, name),
+      this.getCharacterAvatar(realm, name),
+    ]);
+
+    const classData = await this.getClassData(profile.character_class.id);
+    const spec = profile.active_spec?.name || "";
+    const roleHref = profile.active_spec?.key?.href;
+    const role = roleHref ? await this.getSpecRole(roleHref) : undefined;
+
+    return {
+      nome: profile.name,
+      realm: profile.realm.slug,
+      classe: classData.name,
+      classe_en: classData.name_en,
+      classeColor: classData.color,
+      icon: classData.icon,
+      spec,
+      role,
+      level: profile.level,
+      avatar: avatar ?? null,
+      ilvl: profile.equipped_item_level,
+    };
+  }
+
+  getClassColor(classe?: string): string {
+    if (!classe) return "#FFFFFF";
+
+    const sanitized = classe
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s/g, "")
+      .toLowerCase();
+
     const map: Record<string, string> = {
-      Warrior: '#C79C6E',
-      Paladin: '#F58CBA',
-      Hunter: '#ABD473',
-      Rogue: '#FFF569',
-      Priest: '#FFFFFF',
-      DeathKnight: '#C41F3B',
-      Shaman: '#0070DE',
-      Mage: '#69CCF0',
-      Warlock: '#9482C9',
-      Monk: '#00FF96',
-      Druid: '#FF7D0A',
-      DemonHunter: '#A330C9',
-      Evoker: '#33937F',
+      guerreiro: "#C79C6E",
+      paladino: "#F58CBA",
+      cacador: "#ABD473",
+      ladino: "#FFF569",
+      sacerdote: "#FFFFFF",
+      cavaleirodamorte: "#C41F3B",
+      xama: "#0070DE",
+      mago: "#69CCF0",
+      bruxo: "#9482C9",
+      monge: "#00FF96",
+      druida: "#FF7D0A",
+      cacadordedemonios: "#A330C9",
+      conjurante: "#33937F",
     };
 
-    return map[classe.replace(/\s/g, '')] ?? '#FFFFFF';
+    return map[sanitized] ?? "#FFFFFF";
   }
-
-  // Novo método: pega o role da spec via URL (href) com cache
-  async getSpecRole(href: string): Promise<'tank' | 'healer' | 'dps' | undefined> {
-    if (this.specRoleCache.has(href)) {
-      return this.specRoleCache.get(href);
-    }
-
-    try {
-      const token = await this.authenticate();
-      const response = await axios.get(href, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { namespace: `static-${this.region}`, locale: 'pt_BR' },
-      });
-
-      // Exemplo: role: { type: 'HEALER', name: 'Cura' }
-      const roleType = response.data.role?.type?.toLowerCase();
-
-      let normalizedRole: 'tank' | 'healer' | 'dps' | undefined;
-
-      if (roleType === 'tank') {
-        normalizedRole = 'tank';
-      } else if (roleType === 'healer') {
-        normalizedRole = 'healer';
-      } else if (roleType === 'damage') {
-        normalizedRole = 'dps';
-      }
-
-      if (normalizedRole) {
-        this.specRoleCache.set(href, normalizedRole);
-        return normalizedRole;
-      }
-
-      return undefined;
-    } catch (error) {
-      console.error('Erro ao buscar role da spec:', error);
-      return undefined;
-    }
-  }
-
-}
-
-
-interface Asset {
-  key: string;
-  value: string;
 }
