@@ -44,7 +44,7 @@ export function UserStatus() {
 
   if (!user) {
     return (
-      <LoginGoogleButton className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-md text-white font-semibold transition" />
+      <LoginGoogleButton />
     );
   }
 
