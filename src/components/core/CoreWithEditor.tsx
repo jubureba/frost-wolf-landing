@@ -45,6 +45,7 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
   const showEditor = !authLoading && user && role === "RL";
 
   const [core, setCore] = useState(coreOriginal);
+  const [composicao, setComposicao] = useState(coreOriginal.composicaoAtual);
   const [loading, setLoading] = useState(true);
 
   // Lista de jogadores recém adicionados para ignorar cache
@@ -53,8 +54,9 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
   useEffect(() => {
     async function fetchAndCache() {
       setLoading(true);
+
       const composicaoAtualizada = await Promise.all(
-        core.composicaoAtual.map(async (jogador) => {
+        composicao.map(async (jogador) => {
           const chave = `${jogador.realm.toLowerCase()}-${jogador.nome.toLowerCase()}`;
 
           if (!jogadoresNovos.has(chave)) {
@@ -106,15 +108,18 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
         })
       );
 
-      setCore((coreAtual) => ({
-        ...coreAtual,
-        composicaoAtual: composicaoAtualizada,
-      }));
+      // Só atualiza se houve alteração real
+      const composicaoStr = JSON.stringify(composicao);
+      const composicaoAtualizadaStr = JSON.stringify(composicaoAtualizada);
+      if (composicaoStr !== composicaoAtualizadaStr) {
+        setComposicao(composicaoAtualizada);
+      }
+
       setLoading(false);
     }
 
     fetchAndCache();
-  }, [core, jogadoresNovos]);
+  }, [composicao, jogadoresNovos]);
 
   // Função que o editor chama para salvar e registrar jogadores novos
   async function handleSalvarCore(coreAtualizado: Core) {
@@ -122,6 +127,7 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
     try {
       await saveCore(coreAtualizado);
       setCore(coreAtualizado);
+      setComposicao(coreAtualizado.composicaoAtual);
 
       const jogadoresAnteriores = new Set(
         core.composicaoAtual.map(
@@ -148,12 +154,16 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
   return (
     <div className="flex flex-col md:flex-row gap-8 max-w-7xl mx-auto p-4">
       <div className="min-w-[600px] flex-shrink-0">
-        <CoreCard core={core} loading={loading} />
+        <CoreCard core={{ ...core, composicaoAtual: composicao }} loading={loading} />
       </div>
 
       {showEditor && (
         <div className="flex-1 min-w-[600px]">
-          <CoreEditor core={core} onSave={handleSalvarCore} loading={loading} />
+          <CoreEditor
+            core={{ ...core, composicaoAtual: composicao }}
+            onSave={handleSalvarCore}
+            loading={loading}
+          />
         </div>
       )}
     </div>
