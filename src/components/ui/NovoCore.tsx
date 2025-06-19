@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Core, saveCore } from "../../lib/firestoreService";
+import { useToast } from "./ToastContainer";
 
 export function NovoCoreEditor() {
   const [nome, setNome] = useState("");
@@ -11,9 +12,11 @@ export function NovoCoreEditor() {
   const [bossAtual, setBossAtual] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const { showToast } = useToast();
+
   async function criarCore() {
     if (!nome.trim()) {
-      alert("O nome do core é obrigatório.");
+      showToast("O nome do core é obrigatório.", "error");
       return;
     }
 
@@ -30,7 +33,7 @@ export function NovoCoreEditor() {
     setLoading(true);
     try {
       await saveCore(novoCore);
-      alert("Core criado com sucesso!");
+      showToast("Core criado com sucesso!", "success");
       setNome("");
       setInformacoes("");
       setDias("");
@@ -38,7 +41,7 @@ export function NovoCoreEditor() {
       setBossAtual("");
     } catch (error) {
       console.error(error);
-      alert("Erro ao criar core.");
+      showToast("Erro ao criar core.", "error");
     } finally {
       setLoading(false);
     }
