@@ -14,7 +14,6 @@ export function JogadorCard({
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Atualiza o position sempre que o popover abre
   useEffect(() => {
     if (open && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
@@ -37,7 +36,10 @@ export function JogadorCard({
 
           return (
             <>
-              <PopoverButton ref={buttonRef} className="focus:outline-none">
+              <PopoverButton
+                ref={buttonRef}
+                className="focus:outline-none flex flex-col items-center"
+              >
                 <div
                   className="w-14 h-14 rounded-full overflow-hidden border border-[#444]
                     cursor-pointer transition-transform duration-200 hover:scale-105 bg-[#121212] flex items-center justify-center"
@@ -57,6 +59,23 @@ export function JogadorCard({
                       ?
                     </div>
                   )}
+                </div>
+
+                {/* Aqui adiciono nome e spec para aparecer sempre */}
+                <div className="mt-1 text-center w-full max-w-[72px]">
+                  <p
+                    className="font-semibold text-[12px] truncate"
+                    style={{ color: jogador.color ?? "#e2e2e2" }}
+                    title={jogador.nome}
+                  >
+                    {jogador.nome}
+                  </p>
+                  <p className="text-[#999] text-[9px] truncate">
+                    {jogador.classe ?? "??"}
+                  </p>
+                  <p className="text-[#999] text-[9px] truncate">
+                    {jogador.spec ?? "??"}
+                  </p>
                 </div>
               </PopoverButton>
 
@@ -94,7 +113,7 @@ export function JogadorCard({
                     `}
                   ></div>
 
-                  {/* Conteúdo */}
+                  {/* Conteúdo detalhado */}
                   <div className="flex flex-col gap-1 text-center">
                     <p
                       className="font-semibold text-lg"
