@@ -7,7 +7,7 @@ import {
   updateCoreField,
   addPlayerToCore,
   removePlayerFromCore,
-} from "../lib/firestoreService";
+} from "../../lib/firestoreService";
 
 type CoreEditorProps = {
   core: Core;
@@ -19,7 +19,9 @@ export function CoreEditor({ core }: CoreEditorProps) {
   const [dias, setDias] = useState(core.dias || "");
   const [precisaDe, setPrecisaDe] = useState(core.precisaDe || "");
   const [bossAtual, setBossAtual] = useState(core.bossAtual || "");
-  const [composicao, setComposicao] = useState<Player[]>(core.composicaoAtual || []);
+  const [composicao, setComposicao] = useState<Player[]>(
+    core.composicaoAtual || []
+  );
   const [novoNome, setNovoNome] = useState("");
   const [novoRealm, setNovoRealm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,7 +53,9 @@ export function CoreEditor({ core }: CoreEditorProps) {
     }
     const player: Player = { nome: novoNome.trim(), realm: novoRealm.trim() };
 
-    if (composicao.some((p) => p.nome === player.nome && p.realm === player.realm)) {
+    if (
+      composicao.some((p) => p.nome === player.nome && p.realm === player.realm)
+    ) {
       alert("Jogador já está na composição.");
       return;
     }
@@ -75,7 +79,9 @@ export function CoreEditor({ core }: CoreEditorProps) {
     try {
       await removePlayerFromCore(core.id, player);
       setComposicao((prev) =>
-        prev.filter((p) => !(p.nome === player.nome && p.realm === player.realm))
+        prev.filter(
+          (p) => !(p.nome === player.nome && p.realm === player.realm)
+        )
       );
     } catch (error) {
       console.error(error);
@@ -85,7 +91,11 @@ export function CoreEditor({ core }: CoreEditorProps) {
     }
   }
 
-  function editarJogador(index: number, campo: "nome" | "realm", valor: string) {
+  function editarJogador(
+    index: number,
+    campo: "nome" | "realm",
+    valor: string
+  ) {
     setComposicao((prev) => {
       const novaComposicao = [...prev];
       novaComposicao[index] = { ...novaComposicao[index], [campo]: valor };
@@ -109,17 +119,21 @@ export function CoreEditor({ core }: CoreEditorProps) {
   return (
     <div className="max-w-4xl mx-auto p-8 sm:p-10 bg-[#1f1f1f] rounded-2xl border border-[#2a2a2a] shadow-lg text-white font-nunito">
       <h2 className="text-2xl sm:text-3xl font-semibold mb-8 text-white">
-        Editar Core: <span className="text-lime-400 font-bold">{core.nome}</span>
+        Editar Core:{" "}
+        <span className="text-lime-400 font-bold">{core.nome}</span>
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-        {[{ label: "Nome do Core", value: nome, setter: setNome },
+        {[
+          { label: "Nome do Core", value: nome, setter: setNome },
           { label: "Dias", value: dias, setter: setDias },
           { label: "Precisa de", value: precisaDe, setter: setPrecisaDe },
           { label: "Boss Atual", value: bossAtual, setter: setBossAtual },
         ].map(({ label, value, setter }) => (
           <div key={label}>
-            <label className="block text-sm font-medium text-gray-300 mb-1">{label}</label>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              {label}
+            </label>
             <input
               type="text"
               value={value}
@@ -132,7 +146,9 @@ export function CoreEditor({ core }: CoreEditorProps) {
         ))}
 
         <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-300 mb-1">Informações</label>
+          <label className="block text-sm font-medium text-gray-300 mb-1">
+            Informações
+          </label>
           <textarea
             value={informacoes}
             onChange={(e) => setInformacoes(e.target.value)}
@@ -157,10 +173,14 @@ export function CoreEditor({ core }: CoreEditorProps) {
       <hr className="my-10 border-[#333]" />
 
       <div>
-        <h3 className="text-xl font-semibold mb-6 text-white">Composição Atual</h3>
+        <h3 className="text-xl font-semibold mb-6 text-white">
+          Composição Atual
+        </h3>
 
         {composicao.length === 0 && (
-          <p className="text-gray-400 italic mb-6">Nenhum jogador adicionado.</p>
+          <p className="text-gray-400 italic mb-6">
+            Nenhum jogador adicionado.
+          </p>
         )}
 
         <ul className="space-y-4 mb-8">

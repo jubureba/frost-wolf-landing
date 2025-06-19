@@ -1,6 +1,6 @@
 "use client";
 
-import { auth, googleProvider } from "../lib/firebase";
+import { auth, googleProvider } from "../../lib/firebase";
 import { signInWithPopup } from "firebase/auth";
 import { useState } from "react";
 import { GlowOnHoverButton } from "./GlowButton";

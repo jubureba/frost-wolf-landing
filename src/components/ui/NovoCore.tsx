@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Core, saveCore } from "../lib/firestoreService";
+import { Core, saveCore } from "../../lib/firestoreService";
 
 export function NovoCoreEditor() {
   const [nome, setNome] = useState("");

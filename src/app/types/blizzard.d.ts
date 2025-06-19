@@ -39,6 +39,8 @@ type Jogador = {
   spec?: string | null;
   level?: number | null;
   ilvl?: number | null;
+  discord?: string;
+  battletag?: string;
 }
 
 type Core = {

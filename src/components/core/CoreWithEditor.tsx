@@ -2,7 +2,7 @@
 
 import { CoreCard } from './CoreCard';
 import { CoreEditor } from './CoreEditor';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 export function CoreWithEditor({ core }: { core: Core }) {
   const { user, loading, role } = useAuth();

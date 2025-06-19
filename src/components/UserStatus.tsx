@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { auth } from "../lib/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
-import { LoginGoogleButton } from "./GlowOnHoverButton";
+import { LoginGoogleButton } from "./ui/GlowOnHoverButton";
 
 export function UserStatus() {
   const [user, setUser] = useState<User | null>(null);
@@ -43,9 +43,7 @@ export function UserStatus() {
   }
 
   if (!user) {
-    return (
-      <LoginGoogleButton />
-    );
+    return <LoginGoogleButton />;
   }
 
   return (

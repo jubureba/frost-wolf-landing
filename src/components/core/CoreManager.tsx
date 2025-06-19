@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getCores, saveCore, deleteCore, Core } from '../lib/firestoreService';
-import { useIsRL } from '../hooks/useIsRL';
+import { getCores, saveCore, deleteCore, Core } from '../../lib/firestoreService';
+import { useIsRL } from '../../hooks/useIsRL';
 
 export function AdminCores() {
   const { isRL } = useIsRL();
