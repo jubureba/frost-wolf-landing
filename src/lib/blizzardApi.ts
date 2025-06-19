@@ -6,14 +6,18 @@ export class BlizzardApi {
   constructor(private client: BlizzardHttpClient) {}
 
   async getCharacterProfile(realm: string, name: string) {
-    const url = `https://${this.client.region}.api.blizzard.com/profile/wow/character/${realm.toLowerCase()}/${name.toLowerCase()}`;
+    const url = `https://${
+      this.client.region
+    }.api.blizzard.com/profile/wow/character/${realm.toLowerCase()}/${name.toLowerCase()}`;
     return this.client.get<CharacterProfileResponse>(url, {
       namespace: `profile-${this.client.region}`,
     });
   }
 
   async getCharacterAvatar(realm: string, name: string) {
-    const url = `https://${this.client.region}.api.blizzard.com/profile/wow/character/${realm.toLowerCase()}/${name.toLowerCase()}/character-media`;
+    const url = `https://${
+      this.client.region
+    }.api.blizzard.com/profile/wow/character/${realm.toLowerCase()}/${name.toLowerCase()}/character-media`;
     const res = await this.client.get<CharacterMediaResponse>(url, {
       namespace: `profile-${this.client.region}`,
     });
@@ -27,8 +31,7 @@ export class BlizzardApi {
       namespace: `static-${this.client.region}`,
     });
 
-    const icon =
-      res.media?.assets?.find((a) => a.key === "icon")?.value ?? "";
+    const icon = res.media?.assets?.find((a) => a.key === "icon")?.value ?? "";
     const color = this.getClassColor(res.name);
 
     return {
@@ -40,7 +43,9 @@ export class BlizzardApi {
     };
   }
 
-  async getSpecRole(href: string): Promise<"tank" | "healer" | "dps" | undefined> {
+  async getSpecRole(
+    href: string
+  ): Promise<"tank" | "healer" | "dps" | undefined> {
     if (this.specRoleCache.has(href)) return this.specRoleCache.get(href);
 
     const res = await this.client.get<SpecResponse>(href, {
@@ -77,7 +82,7 @@ export class BlizzardApi {
       realm: profile.realm.slug,
       classe: classData.name,
       classe_en: classData.name_en,
-      classeColor: classData.color,
+      color: classData.color, // 🔥 Aqui fica mais direto
       icon: classData.icon,
       spec,
       role,

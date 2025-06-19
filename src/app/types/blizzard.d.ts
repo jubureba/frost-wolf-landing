@@ -40,6 +40,7 @@ type Jogador = {
   level?: number | null;
   ilvl?: number | null;
   discord?: string;
+  iddiscord?: number | null;
   battletag?: string;
 }
 
