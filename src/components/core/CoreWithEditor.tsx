@@ -53,9 +53,8 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
   useEffect(() => {
     async function fetchAndCache() {
       setLoading(true);
-
       const composicaoAtualizada = await Promise.all(
-        coreOriginal.composicaoAtual.map(async (jogador) => {
+        core.composicaoAtual.map(async (jogador) => {
           const chave = `${jogador.realm.toLowerCase()}-${jogador.nome.toLowerCase()}`;
 
           if (!jogadoresNovos.has(chave)) {
@@ -115,7 +114,7 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
     }
 
     fetchAndCache();
-  }, [coreOriginal, jogadoresNovos]);
+  }, [core, jogadoresNovos]);
 
   // Função que o editor chama para salvar e registrar jogadores novos
   async function handleSalvarCore(coreAtualizado: Core) {
