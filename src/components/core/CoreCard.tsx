@@ -1,6 +1,8 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { JogadorCard } from "./JogadorCard";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Dashboard() {
   const [core, setCore] = useState<Core | null>(null);
@@ -15,7 +17,12 @@ export default function Dashboard() {
       });
   }, []);
 
-  if (!core) return <div>Carregando core...</div>;
+  if (!core)
+    return (
+      <div className="flex justify-center items-center h-64 text-gray-400 text-lg font-medium">
+        Carregando core...
+      </div>
+    );
 
   return <CoreCard core={core} loading={loading} />;
 }
@@ -24,31 +31,45 @@ export function CoreCard({ core, loading }: { core: Core; loading: boolean }) {
   const grouped = agruparPorRole(core.composicaoAtual);
 
   const totalPlayers = core.composicaoAtual.length;
-  const totalMelee = grouped.dps.filter((j) => isMelee(j.classe, j.spec)).length;
-  const totalRanged = grouped.dps.filter((j) => isRanged(j.classe, j.spec)).length;
+  const totalMelee = grouped.dps.filter((j) =>
+    isMelee(j.classe, j.spec)
+  ).length;
+  const totalRanged = grouped.dps.filter((j) =>
+    isRanged(j.classe, j.spec)
+  ).length;
 
   return (
-    <div className="bg-[#1f1f1f] border border-[#2a2a2a] rounded-2xl p-6 sm:p-8 shadow-xl text-white font-nunito space-y-6 transition-all duration-200">
+    <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 sm:p-8 shadow-xl text-white font-nunito space-y-6 transition-all duration-200 max-w-5xl mx-auto">
       <header>
-        <h2 className="text-2xl sm:text-3xl font-bold">{core.nome}</h2>
-        <p className="text-sm text-gray-300 mt-1">{core.informacoes}</p>
+        <h2 className="text-3xl font-extrabold text-lime-400">{core.nome}</h2>
+        <p className="text-gray-400 mt-1">{core.informacoes}</p>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-300 border-t border-[#333] pt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm text-gray-300 border-t border-neutral-800 pt-5">
         <Info label="Dias" value={core.dias} />
         <Info label="Recrutando" value={core.precisaDe} />
         <Info label="Boss Atual" value={core.bossAtual} />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-300 border-t border-[#333] pt-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm text-gray-300 border-t border-neutral-800 pt-5">
         <Info label="Total de Players" value={`${totalPlayers}`} />
         <Info label="DPS Melee" value={`${totalMelee}`} />
         <Info label="DPS Ranged" value={`${totalRanged}`} />
       </div>
 
-      <section className="space-y-8 pt-4">
-        <Grupo titulo="Tanks" cor="cyan" jogadores={grouped.tanks} loading={loading} />
-        <Grupo titulo="Healers" cor="violet" jogadores={grouped.healers} loading={loading} />
+      <section className="space-y-10 pt-6">
+        <Grupo
+          titulo="Tanks"
+          cor="cyan"
+          jogadores={grouped.tanks}
+          loading={loading}
+        />
+        <Grupo
+          titulo="Healers"
+          cor="violet"
+          jogadores={grouped.healers}
+          loading={loading}
+        />
         <Grupo
           titulo="DPS Melee"
           cor="pink"
@@ -69,8 +90,8 @@ export function CoreCard({ core, loading }: { core: Core; loading: boolean }) {
 function Info({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="font-medium text-gray-400">{label}:</span>
-      <span>{value}</span>
+      <span className="font-semibold text-gray-400">{label}:</span>
+      <span className="text-white">{value || "-"}</span>
     </div>
   );
 }
@@ -140,37 +161,42 @@ function Grupo({
   return (
     <div>
       <h3
-        className={`text-sm font-semibold ${corClasse} mb-3 flex items-center gap-2`}
+        className={`text-lg font-semibold ${corClasse} mb-4 flex items-center gap-3`}
       >
-        {titulo}{" "}
+        {titulo}
         {loading ? (
-          <span className="flex items-center gap-2 text-xs text-gray-400 ml-2">
-            <div
-              className="w-6 h-6 border-4 border-gray-600 border-t-transparent rounded-full animate-spin"
-              style={{ borderTopColor: "#38bdf8", marginTop: "2px" }}
-            ></div>
-            <span>Carregando...</span>
-          </span>
-        ) : jogadores.length > 0 ? (
-          `(${jogadores.length})`
+          <div
+            className="w-6 h-6 border-4 border-gray-600 border-t-transparent rounded-full animate-spin"
+            style={{ borderTopColor: "#38bdf8" }}
+            role="status"
+            aria-label="Carregando"
+          />
         ) : (
-          "(0)"
+          <span className="text-sm text-gray-400">({jogadores.length})</span>
         )}
       </h3>
 
-      {loading ? null : jogadores.length > 0 ? (
-        <ul className="flex flex-wrap gap-4">
-          {jogadores.map((j) => (
-            <JogadorCard
-              key={`${j.nome}-${j.realm}`}
-              jogador={j}
-              loading={!j.avatar || !j.spec || !j.classe || !j.ilvl}
-            />
-          ))}
-        </ul>
-      ) : (
-        <span className="text-xs text-gray-500">(Nenhum)</span>
-      )}
+      <AnimatePresence mode="popLayout">
+        {!loading && jogadores.length > 0 ? (
+          <motion.ul
+            layout
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="flex flex-wrap gap-4"
+          >
+            {jogadores.map((j) => (
+              <JogadorCard
+                key={`${j.nome}-${j.realm}`}
+                jogador={j}
+                loading={!j.avatar || !j.spec || !j.classe || !j.ilvl}
+              />
+            ))}
+          </motion.ul>
+        ) : !loading ? (
+          <span className="text-xs text-gray-500 italic">(Nenhum jogador)</span>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

@@ -2,9 +2,10 @@
 
 import { useEffect, useState, createContext, useContext } from "react";
 import { Toast } from "./Toast";
+import { AnimatePresence } from "framer-motion";
 
 type ToastMessage = {
-  id: number;
+  id: string;
   message: string;
   type?: "success" | "error" | "info" | "warning";
   title?: string;
@@ -43,7 +44,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       onAction?: () => void;
     }
   ) => {
-    const id = Date.now();
+    const id = crypto.randomUUID();
+
     setToasts((prev) => [
       ...prev,
       {
@@ -52,7 +54,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         type,
         actionLabel: options?.actionLabel,
         onAction: options?.onAction,
-        title: titles[type], // título automático baseado no tipo
+        title: titles[type],
       },
     ]);
   };
@@ -60,7 +62,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (toasts.length === 0) return;
 
-    // Filtra toasts SEM actionLabel para auto-remover
     const toastsSemAcao = toasts.filter((t) => !t.actionLabel);
 
     const timers = toastsSemAcao.map((toast) =>
@@ -74,7 +75,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     };
   }, [toasts]);
 
-  const removeToast = (id: number) => {
+  const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
@@ -82,17 +83,19 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastContext.Provider value={{ showToast }}>
       {children}
       <div className="fixed bottom-4 right-4 flex flex-col gap-3 z-[9999]">
-        {toasts.map((t) => (
-          <Toast
-            key={t.id}
-            message={t.message}
-            type={t.type}
-            title={t.title}
-            actionLabel={t.actionLabel}
-            onAction={t.onAction}
-            onClose={() => removeToast(t.id)}
-          />
-        ))}
+        <AnimatePresence>
+          {toasts.map((t) => (
+            <Toast
+              key={t.id}
+              message={t.message}
+              type={t.type}
+              title={t.title}
+              actionLabel={t.actionLabel}
+              onAction={t.onAction}
+              onClose={() => removeToast(t.id)}
+            />
+          ))}
+        </AnimatePresence>
       </div>
     </ToastContext.Provider>
   );
