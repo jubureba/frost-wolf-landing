@@ -1,7 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import React, { useState, useEffect } from "react";
 import { JogadorCard } from "./JogadorCard";
 
 export default function Dashboard() {
@@ -173,15 +171,6 @@ function Grupo({
       ) : (
         <span className="text-xs text-gray-500">(Nenhum)</span>
       )}
-    </div>
-  );
-}
-
-function InfoLabel({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col">
-      <span className="text-gray-400 text-xs">{label}</span>
-      <span className="font-medium truncate">{value}</span>
     </div>
   );
 }

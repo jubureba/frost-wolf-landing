@@ -219,71 +219,85 @@ export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
           </p>
         ) : (
           <div className="overflow-x-auto mb-8">
-  <div
-    className="
+            <div
+              className="
       max-h-64 overflow-y-auto rounded-xl border border-[#444]
       scrollbar-thin scrollbar-thumb-lime-600 scrollbar-track-[#1f1f1f]
       scrollbar-thumb-rounded
     "
-    style={{
-      scrollbarWidth: "thin",
-      scrollbarColor: "#84cc16 #1f1f1f",
-    }}
-  >
-    <table className="w-full border-collapse border border-[#444]">
-      <thead className="bg-[#2a2a2a] sticky top-0">
-        <tr>
-          <th className="p-2 text-left border-b border-[#444]">Nome</th>
-          <th className="p-2 text-left border-b border-[#444]">Reino</th>
-          <th className="p-2 text-left border-b border-[#444]">Discord</th>
-          <th className="p-2 text-left border-b border-[#444]">BattleTag</th>
-          <th className="p-2 text-center border-b border-[#444]">Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {composicao.map((player, idx) => (
-          <tr
-            key={`${player.nome}-${player.realm}`}
-            className={`${
-              idx % 2 === 0 ? "bg-[#222]" : "bg-[#1a1a1a]"
-            } hover:bg-[#2f2f2f] transition-colors`}
-          >
-            <td className="p-2 border-b border-[#444]">{player.nome}</td>
-            <td className="p-2 border-b border-[#444]">{player.realm}</td>
-            <td className="p-2 border-b border-[#444]">
-              {player.discord || (
-                <span className="text-gray-500 italic">-</span>
-              )}
-            </td>
-            <td className="p-2 border-b border-[#444]">
-              {player.battletag || (
-                <span className="text-gray-500 italic">-</span>
-              )}
-            </td>
-            <td className="p-2 border-b border-[#444] text-center">
-              <div className="flex gap-3 justify-center">
-                <button
-                  onClick={() => editarJogador(idx)}
-                  className="text-blue-500 hover:text-blue-600"
-                  title="Editar"
-                >
-                  <Pencil size={18} />
-                </button>
-                <button
-                  onClick={() => removerJogador(idx)}
-                  className="text-red-500 hover:text-red-600"
-                  title="Remover"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-</div>
+              style={{
+                scrollbarWidth: "thin",
+                scrollbarColor: "#84cc16 #1f1f1f",
+              }}
+            >
+              <table className="w-full border-collapse border border-[#444]">
+                <thead className="bg-[#2a2a2a] sticky top-0">
+                  <tr>
+                    <th className="p-2 text-left border-b border-[#444]">
+                      Nome
+                    </th>
+                    <th className="p-2 text-left border-b border-[#444]">
+                      Reino
+                    </th>
+                    <th className="p-2 text-left border-b border-[#444]">
+                      Discord
+                    </th>
+                    <th className="p-2 text-left border-b border-[#444]">
+                      BattleTag
+                    </th>
+                    <th className="p-2 text-center border-b border-[#444]">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {composicao.map((player, idx) => (
+                    <tr
+                      key={`${player.nome}-${player.realm}`}
+                      className={`${
+                        idx % 2 === 0 ? "bg-[#222]" : "bg-[#1a1a1a]"
+                      } hover:bg-[#2f2f2f] transition-colors`}
+                    >
+                      <td className="p-2 border-b border-[#444]">
+                        {player.nome}
+                      </td>
+                      <td className="p-2 border-b border-[#444]">
+                        {player.realm}
+                      </td>
+                      <td className="p-2 border-b border-[#444]">
+                        {player.discord || (
+                          <span className="text-gray-500 italic">-</span>
+                        )}
+                      </td>
+                      <td className="p-2 border-b border-[#444]">
+                        {player.battletag || (
+                          <span className="text-gray-500 italic">-</span>
+                        )}
+                      </td>
+                      <td className="p-2 border-b border-[#444] text-center">
+                        <div className="flex gap-3 justify-center">
+                          <button
+                            onClick={() => editarJogador(idx)}
+                            className="text-blue-500 hover:text-blue-600"
+                            title="Editar"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                          <button
+                            onClick={() => removerJogador(idx)}
+                            className="text-red-500 hover:text-red-600"
+                            title="Remover"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         )}
 
         <button

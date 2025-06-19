@@ -7,8 +7,11 @@ import { saveCore, Core } from "../../lib/firestoreService";
 // Tempo de expiração do cache (6 horas)
 const CACHE_EXPIRATION_MS = 6 * 60 * 60 * 1000;
 
+// Definição genérica para os dados do personagem
+type CharacterData = Record<string, unknown>;
+
 // 🔸 Função para obter do cache
-function getCachedCharacter(realm: string, name: string) {
+function getCachedCharacter(realm: string, name: string): CharacterData | null {
   const key = `char-${realm.toLowerCase()}-${name.toLowerCase()}`;
   const item = localStorage.getItem(key);
 
@@ -31,7 +34,7 @@ function getCachedCharacter(realm: string, name: string) {
 }
 
 // 🔸 Função para salvar no cache
-function setCachedCharacter(realm: string, name: string, data: any) {
+function setCachedCharacter(realm: string, name: string, data: CharacterData) {
   const key = `char-${realm.toLowerCase()}-${name.toLowerCase()}`;
   localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
   console.log(`💾 Salvando no cache: ${name} - ${realm}`);
@@ -52,7 +55,7 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
       setLoading(true);
 
       const composicaoAtualizada = await Promise.all(
-        core.composicaoAtual.map(async (jogador) => {
+        coreOriginal.composicaoAtual.map(async (jogador) => {
           const chave = `${jogador.realm.toLowerCase()}-${jogador.nome.toLowerCase()}`;
 
           if (!jogadoresNovos.has(chave)) {
@@ -104,7 +107,10 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
         })
       );
 
-      setCore({ ...core, composicaoAtual: composicaoAtualizada });
+      setCore((coreAtual) => ({
+        ...coreAtual,
+        composicaoAtual: composicaoAtualizada,
+      }));
       setLoading(false);
     }
 

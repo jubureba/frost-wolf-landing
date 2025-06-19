@@ -31,7 +31,7 @@ export default function Home() {
         ))}
       </div>
 
-      <FloatingButton action={() => alert("Criar core")}>+</FloatingButton>
+      <FloatingButton action={async () => alert("Criar core")}>+</FloatingButton>
     </main>
   );
 }

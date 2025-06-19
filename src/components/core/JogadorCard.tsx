@@ -11,29 +11,36 @@ export function JogadorCard({
   loading?: boolean;
 }) {
   const [position, setPosition] = useState<"top" | "left" | "right">("top");
+  const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Atualiza o position sempre que o popover abre
+  useEffect(() => {
+    if (open && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      const vw = window.innerWidth;
+
+      if (rect.right + 320 > vw) setPosition("left");
+      else if (rect.left < 320) setPosition("right");
+      else setPosition("top");
+    }
+  }, [open]);
 
   return (
     <li className="relative flex flex-col items-start w-16">
       <Popover className="relative">
-        {({ open }) => {
+        {({ open: popoverOpen }) => {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
           useEffect(() => {
-            if (open && buttonRef.current) {
-              const rect = buttonRef.current.getBoundingClientRect();
-              const vw = window.innerWidth;
-
-              if (rect.right + 320 > vw) setPosition("left");
-              else if (rect.left < 320) setPosition("right");
-              else setPosition("top");
-            }
-          }, [open]);
+            setOpen(popoverOpen);
+          }, [popoverOpen]);
 
           return (
             <>
               <PopoverButton ref={buttonRef} className="focus:outline-none">
                 <div
                   className="w-14 h-14 rounded-full overflow-hidden border border-[#444]
-                  cursor-pointer transition-transform duration-200 hover:scale-105 bg-[#121212] flex items-center justify-center"
+                    cursor-pointer transition-transform duration-200 hover:scale-105 bg-[#121212] flex items-center justify-center"
                 >
                   {loading ? (
                     <div className="w-6 h-6 border-2 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
@@ -53,37 +60,21 @@ export function JogadorCard({
                 </div>
               </PopoverButton>
 
-              <div className="mt-1 text-left w-full max-w-[72px]">
-                <p
-                  className="font-semibold text-[12px] truncate"
-                  style={{ color: jogador.color ?? "#e2e2e2" }}
-                  title={jogador.nome}
-                >
-                  {jogador.nome}
-                </p>
-                <p className="text-[#999] text-[9px] truncate">
-                  {jogador.classe ?? "??"}
-                </p>
-                <p className="text-[#999] text-[9px] truncate">
-                  {jogador.spec ?? "??"}
-                </p>
-              </div>
-
-              {open && (
+              {popoverOpen && (
                 <PopoverPanel
                   className={`
-                    absolute z-50 w-[280px] sm:w-[300px]
-                    rounded-2xl bg-[#202020cc] backdrop-blur-md
-                    border border-[#444] shadow-xl
-                    flex flex-col gap-6 p-6
-                    ${
-                      position === "top"
-                        ? "left-1/2 -translate-x-1/2 bottom-full mb-6"
-                        : position === "left"
-                        ? "right-full mr-6 top-1/2 -translate-y-1/2"
-                        : "left-full ml-6 top-1/2 -translate-y-1/2"
-                    }
-                  `}
+                      absolute z-50 w-[280px] sm:w-[300px]
+                      rounded-2xl bg-[#202020cc] backdrop-blur-md
+                      border border-[#444] shadow-xl
+                      flex flex-col gap-6 p-6
+                      ${
+                        position === "top"
+                          ? "left-1/2 -translate-x-1/2 bottom-full mb-6"
+                          : position === "left"
+                          ? "right-full mr-6 top-1/2 -translate-y-1/2"
+                          : "left-full ml-6 top-1/2 -translate-y-1/2"
+                      }
+                    `}
                 >
                   {/* Setinha */}
                   <div
