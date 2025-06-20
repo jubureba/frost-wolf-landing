@@ -154,7 +154,14 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
   return (
     <div className="flex flex-col md:flex-row gap-8 max-w-7xl mx-auto p-4">
       <div className="min-w-[600px] flex-shrink-0">
-        <CoreCard core={{ ...core, composicaoAtual: composicao }} loading={loading} />
+        <CoreCard
+          core={{
+            ...core,
+            composicaoAtual: composicao,
+            recrutando: core.recrutando ?? false,
+          }}
+          loading={loading}
+        />
       </div>
 
       {showEditor && (

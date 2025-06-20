@@ -11,11 +11,16 @@ export default function Home() {
   const [cores, setCores] = useState<Core[]>([]);
 
   useEffect(() => {
-    const fetch = async () => {
-      const dados = await getCores();
-      console.log("🚀 Dados dos cores:", dados);
+    async function fetch() {
+      const dadosRaw = await getCores();
+
+      const dados: Core[] = dadosRaw.map((core) => ({
+        ...core,
+        recrutando: core.recrutando ?? false,
+      }));
+
       setCores(dados);
-    };
+    }
 
     fetch();
   }, []);
@@ -31,7 +36,9 @@ export default function Home() {
         ))}
       </div>
 
-      <FloatingButton action={async () => alert("Criar core")}>+</FloatingButton>
+      <FloatingButton action={async () => alert("Criar core")}>
+        +
+      </FloatingButton>
     </main>
   );
 }

@@ -17,6 +17,7 @@ export type Player = {
   realm: string;
   discord?: string;
   battletag?: string;
+  twitch?: string;
 };
 
 // Tipagem do core
@@ -26,7 +27,9 @@ export type Core = {
   informacoes: string;
   dias: string;
   precisaDe: string;
+  recrutando?: boolean;
   bossAtual: string;
+  linkRecrutamento?: string;
   composicaoAtual: Player[];
 };
 
@@ -43,6 +46,7 @@ export function sanitizePlayer(player: unknown): Player {
     realm: String(obj.realm ?? "").trim(),
     discord: obj.discord ? String(obj.discord).trim() : "",
     battletag: obj.battletag ? String(obj.battletag).trim() : "",
+    twitch: obj.twitch ? String(obj.twitch).trim() : "", // ✅ Incluído na sanitização
   };
 }
 
@@ -108,6 +112,7 @@ export const addPlayerToCore = async (coreId: string, player: Player) => {
   });
 };
 
+// 🔸 Adicionar player se não existir
 export const addPlayerIfNotExists = async (coreId: string, player: Player) => {
   const coreRef = doc(db, "cores", coreId);
   const coreSnap = await getDoc(coreRef);

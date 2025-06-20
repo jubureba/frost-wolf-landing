@@ -42,6 +42,7 @@ type Jogador = {
   discord?: string;
   iddiscord?: number | null;
   battletag?: string;
+  twitch?: string;
 }
 
 type Core = {
@@ -50,6 +51,8 @@ type Core = {
   informacoes: string;
   dias: string;
   precisaDe: string;
+  recrutando: boolean;
   bossAtual: string;
+  linkRecrutamento?: string;
   composicaoAtual: Jogador[];
 }

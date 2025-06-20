@@ -190,6 +190,26 @@ export function JogadorCard({
                             </div>
                           )}
 
+                          {jogador.twitch && (
+                            <div className="flex items-center gap-2 text-sm text-purple-400 truncate">
+                              <Image
+                                src="/assets/icons/twitch.png"
+                                alt="Twitch"
+                                width={16}
+                                height={16}
+                                className="flex-shrink-0"
+                              />
+                              <a
+                                href={`https://twitch.tv/${jogador.twitch}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:underline truncate"
+                              >
+                                {jogador.twitch}
+                              </a>
+                            </div>
+                          )}
+
                           <div className="flex gap-4 justify-center">
                             {[
                               {
