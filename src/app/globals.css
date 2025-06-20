@@ -194,3 +194,58 @@ body {
 .backface-hidden {
   backface-visibility: hidden;
 }
+@keyframes shimmer {
+  0% {
+    background-position: -500px 0;
+  }
+  100% {
+    background-position: 500px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    to right,
+    #2a2a2a 0%,
+    #3a3a3a 20%,
+    #2a2a2a 40%,
+    #2a2a2a 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+.neon-text {
+  color: #84cc16; /* verde lime-400 */
+  text-shadow:
+    0 0 5px #84cc16,
+    0 0 10px #84cc16,
+    0 0 20px #84cc16,
+    0 0 40px #a3e635;
+  transition: color 0.3s ease;
+}
+
+.neon-text:hover {
+  color: #bef264;
+  text-shadow:
+    0 0 10px #bef264,
+    0 0 20px #bef264,
+    0 0 30px #bef264,
+    0 0 60px #d9f99d;
+}
+
+.neon-border {
+  border-color: #84cc16;
+  box-shadow:
+    0 0 5px #84cc16,
+    0 0 10px #84cc16;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.neon-border:hover {
+  border-color: #bef264;
+  box-shadow:
+    0 0 10px #bef264,
+    0 0 20px #bef264,
+    0 0 30px #bef264;
+}

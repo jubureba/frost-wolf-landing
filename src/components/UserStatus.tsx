@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { auth } from "../lib/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { LoginGoogleButton } from "./ui/GlowOnHoverButton";
+import { motion } from "framer-motion";
 
 export function UserStatus() {
   const [user, setUser] = useState<User | null>(null);
@@ -13,10 +14,9 @@ export function UserStatus() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      setDropdownOpen(false); // fecha dropdown se mudar usuário
+      setDropdownOpen(false);
     });
 
-    // Fecha dropdown se clicar fora
     function handleClickOutside(event: MouseEvent) {
       if (
         dropdownRef.current &&
@@ -48,28 +48,52 @@ export function UserStatus() {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button
+      <motion.button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className={`relative flex items-center gap-3 rounded-md bg-[trasparent] hover:bg-[#5100a3] px-3 py-1 text-white font-semibold transition glow-border-active ${
-          dropdownOpen ? "active" : ""
-        }`}
+        whileHover={{
+          scale: 1.05,
+          boxShadow: "0 0 8px rgb(163 230 53)",
+        }}
+        whileTap={{ scale: 0.95 }}
+        className={`relative flex items-center gap-3 rounded-md
+          bg-transparent
+          px-3 py-1
+          text-lime-400 font-semibold
+          border border-lime-500
+          transition
+          duration-200
+          hover:bg-lime-500 hover:text-neutral-900
+          focus:outline-none focus:ring-2 focus:ring-lime-400
+          ${dropdownOpen ? "ring-2 ring-lime-400" : ""}
+        `}
+        style={{
+          boxShadow: dropdownOpen ? "0 0 8px rgb(163 230 53)" : "none",
+        }}
       >
         {user.photoURL ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={user.photoURL}
             alt={user.displayName ?? "Avatar"}
-            className="w-8 h-8 rounded-full object-cover border-2 border-purple-400"
+            className="w-8 h-8 rounded-full object-cover border border-lime-500"
+            style={{ boxShadow: "0 0 6px rgb(163 230 53)" }}
           />
         ) : (
-          <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-white text-sm font-bold">
+          <div
+            className="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-white text-sm font-bold border border-lime-500"
+            style={{ boxShadow: "0 0 6px rgb(163 230 53)" }}
+          >
             {user.displayName?.[0] ?? user.email?.[0] ?? "?"}
           </div>
         )}
-        <span className="whitespace-nowrap max-w-[8rem] overflow-hidden text-ellipsis">
+        <span
+          className="whitespace-nowrap max-w-[8rem] overflow-hidden text-ellipsis"
+          title={user.displayName ?? user.email ?? "Usuário"}
+        >
           {user.displayName ?? user.email ?? "Usuário"}
         </span>
         <svg
-          className={`w-4 h-4 ml-1 transition-transform ${
+          className={`w-4 h-4 ml-1 transition-transform text-lime-400 ${
             dropdownOpen ? "rotate-180" : ""
           }`}
           fill="none"
@@ -83,14 +107,36 @@ export function UserStatus() {
             d="M19 9l-7 7-7-7"
           />
         </svg>
-      </button>
+      </motion.button>
 
       {dropdownOpen && (
-        <div className="absolute right-0 mt-2 w-36 bg-[#1f1f1f] rounded-md shadow-lg border border-purple-700 py-2 z-50">
+        <div  className="absolute right-0 mt-2 w-36 rounded-md shadow-lg py-2 z-50
+      bg-transparent backdrop-blur-sm">
           <button
             onClick={handleLogout}
-            className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-600 hover:text-white transition"
-          >
+            className="
+                      w-full
+                      text-left
+                      px-5
+                      py-2.5
+                      text-red-500
+                      font-semibold
+                      border
+                      border-red-500
+                      rounded-xl
+                      bg-transparent
+                      transition
+                      duration-300
+                      ease-in-out
+                      shadow-none
+                      hover:bg-red-600
+                      hover:text-white
+                      hover:shadow-[0_0_10px_3px_rgba(220,38,38,0.9)]
+                      focus:outline-none
+                      focus:ring-2
+                      focus:ring-red-500
+                      focus:ring-opacity-75
+                    ">
             Sair
           </button>
         </div>

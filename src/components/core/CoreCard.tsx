@@ -17,20 +17,29 @@ export default function Dashboard() {
       });
   }, []);
 
-  if (!core)
-    return (
-      <div className="flex justify-center items-center h-64 text-gray-400 text-lg font-medium">
-        Carregando core...
-      </div>
-    );
-
-  return <CoreCard core={core} loading={loading} />;
+  return (
+    <div className="flex justify-center items-start min-h-[400px]">
+      {core || loading ? (
+        <CoreCard core={core} loading={loading} />
+      ) : (
+        <div className="text-gray-400 text-lg font-medium">
+          Core não encontrado.
+        </div>
+      )}
+    </div>
+  );
 }
 
-export function CoreCard({ core, loading }: { core: Core; loading: boolean }) {
-  const grouped = agruparPorRole(core.composicaoAtual);
+export function CoreCard({
+  core,
+  loading,
+}: {
+  core: Core | null;
+  loading: boolean;
+}) {
+  const grouped = agruparPorRole(core?.composicaoAtual ?? []);
 
-  const totalPlayers = core.composicaoAtual.length;
+  const totalPlayers = core?.composicaoAtual.length ?? 0;
   const totalMelee = grouped.dps.filter((j) =>
     isMelee(j.classe, j.spec)
   ).length;
@@ -39,14 +48,24 @@ export function CoreCard({ core, loading }: { core: Core; loading: boolean }) {
   ).length;
 
   return (
-    <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 sm:p-8 shadow-xl text-white font-nunito space-y-6 transition-all duration-200 max-w-5xl mx-auto">
+    <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 sm:p-8 shadow-xl text-white font-nunito space-y-6 transition-all duration-200 max-w-5xl w-full">
       <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-extrabold text-lime-400">{core.nome}</h2>
-          <p className="text-gray-400 mt-1">{core.informacoes}</p>
+          {loading ? (
+            <div className="h-8 w-48 shimmer rounded" />
+          ) : (
+            <h2 className="text-3xl font-extrabold text-lime-400">
+              {core?.nome}
+            </h2>
+          )}
+          {loading ? (
+            <div className="h-4 w-64 shimmer rounded mt-2" />
+          ) : (
+            <p className="text-gray-400 mt-1">{core?.informacoes}</p>
+          )}
         </div>
 
-        {core.recrutando && core.linkRecrutamento && (
+        {!loading && core?.recrutando && core?.linkRecrutamento && (
           <motion.a
             href={core.linkRecrutamento}
             target="_blank"
@@ -64,15 +83,15 @@ export function CoreCard({ core, loading }: { core: Core; loading: boolean }) {
       </header>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm text-gray-300 border-t border-neutral-800 pt-5">
-        <Info label="Dia/Hora" value={core.dias} />
-        <Info label="Recrutando" value={core.precisaDe} />
-        <Info label="Luta Atual" value={core.bossAtual} />
+        <Info label="Dia/Hora" value={core?.dias} loading={loading} />
+        <Info label="Recrutando" value={core?.precisaDe} loading={loading} />
+        <Info label="Luta Atual" value={core?.bossAtual} loading={loading} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm text-gray-300 border-t border-neutral-800 pt-5">
-        <Info label="Total de Players" value={`${totalPlayers}`} />
-        <Info label="DPS Melee" value={`${totalMelee}`} />
-        <Info label="DPS Ranged" value={`${totalRanged}`} />
+        <Info label="Total de Players" value={`${totalPlayers}`} loading={loading} />
+        <Info label="DPS Melee" value={`${totalMelee}`} loading={loading} />
+        <Info label="DPS Ranged" value={`${totalRanged}`} loading={loading} />
       </div>
 
       <section className="space-y-10 pt-6">
@@ -105,11 +124,23 @@ export function CoreCard({ core, loading }: { core: Core; loading: boolean }) {
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function Info({
+  label,
+  value,
+  loading,
+}: {
+  label: string;
+  value?: string;
+  loading?: boolean;
+}) {
   return (
     <div className="flex flex-col gap-1">
       <span className="font-semibold text-gray-400">{label}:</span>
-      <span className="text-white">{value || "-"}</span>
+      {loading ? (
+        <div className="h-4 w-24 shimmer rounded" />
+      ) : (
+        <span className="text-white">{value || "-"}</span>
+      )}
     </div>
   );
 }
@@ -156,6 +187,8 @@ function isRanged(classe?: string | null, spec?: string | null) {
   );
 }
 
+import { CardSkeleton } from "../layout/CardSkeleton";
+
 function Grupo({
   titulo,
   cor,
@@ -184,7 +217,7 @@ function Grupo({
         {titulo}
         {loading ? (
           <div
-            className="w-6 h-6 border-4 border-gray-600 border-t-transparent rounded-full animate-spin"
+            className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"
             style={{ borderTopColor: "#38bdf8" }}
             role="status"
             aria-label="Carregando"
@@ -211,9 +244,17 @@ function Grupo({
               />
             ))}
           </motion.ul>
-        ) : !loading ? (
-          <span className="text-xs text-gray-500 italic">(Nenhum jogador)</span>
-        ) : null}
+        ) : loading ? (
+          <div className="flex flex-wrap gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <CardSkeleton key={i} avatarSize={56} lines={2} widths={["80%", "50%"]} />
+            ))}
+          </div>
+        ) : (
+          <span className="text-xs text-gray-500 italic">
+            (Nenhum jogador)
+          </span>
+        )}
       </AnimatePresence>
     </div>
   );
