@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -28,11 +28,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser(user);
       setLoading(false);
 
-      // Aqui você pode buscar a role real do usuário no banco,
-      // ou usar claims customizadas, etc.
-      // Exemplo mock:
-      console.log(user?.email);
-      if (user?.email === "thiagolima1400@gmail.com") {
+      if (
+        user?.email === "thiagolima1400@gmail.com" ||
+        user?.email === "deboramrs.miranda@gmail.com"
+      ) {
         setRole("RL");
       } else {
         setRole("USER");

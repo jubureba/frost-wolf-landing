@@ -1,6 +1,6 @@
 import { useAuth } from "../context/AuthContext";
 
-const RL_EMAILS = ["thiagolima1400@gmail.com", "outroemail@gmail.com"];
+const RL_EMAILS = ["thiagolima1400@gmail.com", "deboramrs.miranda@gmail.com"];
 
 export function useIsRL() {
   const { user } = useAuth();
