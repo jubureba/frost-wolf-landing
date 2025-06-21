@@ -30,7 +30,6 @@ export function JogadorCard({
     <li className="relative flex flex-col items-start w-16">
       <Popover className="relative">
         {({ open: popoverOpen }) => {
-          // Atualiza estado local open conforme popover abre/fecha
           // eslint-disable-next-line react-hooks/rules-of-hooks
           useEffect(() => {
             setOpen(popoverOpen);
@@ -44,8 +43,8 @@ export function JogadorCard({
               >
                 <div
                   className="w-14 h-14 rounded-full overflow-hidden border border-[#444]
-                    bg-[#121212] flex items-center justify-center
-                    transition-transform duration-300 hover:scale-110 hover:shadow-lg"
+                  bg-[#121212] flex items-center justify-center
+                  transition-transform duration-300 hover:scale-110 hover:shadow-lg"
                 >
                   {loading ? (
                     <div className="w-full h-full rounded-full shimmer"></div>
@@ -64,197 +63,167 @@ export function JogadorCard({
                   )}
                 </div>
 
-                {/* Nome e spec sempre visíveis */}
+                {/* Nome e spec */}
                 <div className="mt-1 text-center w-full max-w-[72px]">
                   <p
-                    className="font-semibold text-[12px] truncate"
+                    className="text-[15px] truncate font-saira"
                     style={{ color: jogador.color ?? "#e2e2e2" }}
                     title={jogador.nome}
                   >
                     {jogador.nome}
                   </p>
-                  <p className="text-[#999] text-[9px] truncate">
+
+                  <div className="flex justify-center items-center gap-1">
+                    <p className="text-gray-400 text-[10px] font-roboto">
+                      {jogador.spec ?? "??"}
+                    </p>
+                  </div>
+
+                  <p className="text-gray-500 text-[10px] font-roboto">
                     {jogador.classe ?? "??"}
-                  </p>
-                  <p className="text-[#999] text-[9px] truncate">
-                    {jogador.spec ?? "??"}
                   </p>
                 </div>
               </PopoverButton>
 
+              {/* Popover */}
               <AnimatePresence>
                 {popoverOpen && (
                   <PopoverPanel static>
-                    <AnimatePresence>
-                      {popoverOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          transition={{ duration: 0.25, ease: "easeOut" }}
-                          className={`
-          absolute z-50 w-[280px] sm:w-[300px]
-          rounded-2xl bg-[#202020dd] backdrop-blur-md
-          border border-[#444] shadow-2xl
-          flex flex-col gap-6 p-6
-          ${
-            position === "top"
-              ? "left-1/2 -translate-x-1/2 bottom-full mb-6"
-              : position === "left"
-              ? "right-full mr-6 top-1/2 -translate-y-1/2"
-              : "left-full ml-6 top-1/2 -translate-y-1/2"
-          }
-        `}
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.25, ease: "easeOut" }}
+                      className={`
+      absolute z-50 w-[280px] sm:w-[320px] rounded-2xl
+      bg-[#1a1a1a] backdrop-blur-md border border-neutral-700 shadow-[inset_0_1px_4px_#00000066]
+      flex flex-col gap-4 p-4
+      popover-with-arrow
+      ${
+        position === "top"
+          ? "popover-top left-1/2 -translate-x-1/2 bottom-full mb-6"
+          : position === "left"
+          ? "popover-left right-full mr-6 top-1/2 -translate-y-1/2"
+          : "popover-right left-full ml-6 top-1/2 -translate-y-1/2"
+      }
+    `}
+                    >
+                      {/* 🔥 Título */}
+                      <div className="border-b border-neutral-700 pb-2">
+                        <p
+                          className="font-semibold text-xl truncate font-saira"
+                          style={{ color: jogador.color ?? "#e2e2e2" }}
+                          title={jogador.nome}
                         >
-                          {/* Setinha */}
-                          <div
-                            className={`
-            absolute
-            ${
-              position === "top"
-                ? "top-[calc(100%-10px)] left-1/2 -translate-x-1/2 rotate-[225deg]"
-                : position === "left"
-                ? "top-1/2 right-[-12px] -translate-y-1/2 rotate-45"
-                : "top-1/2 left-[-12px] -translate-y-1/2 -rotate-45"
-            }
-            w-6 h-6
-            bg-[#202020dd] backdrop-blur-md
-            border-l border-t border-[#444]
-            drop-shadow-md
-            z-[-1]
-          `}
-                          ></div>
+                          {jogador.nome} - {jogador.realm}
+                        </p>
 
-                          {/* Conteúdo detalhado */}
-                          <div className="flex flex-col gap-1 text-center">
-                            <p
-                              className="font-semibold text-lg"
-                              style={{ color: jogador.color ?? "#e2e2e2" }}
-                            >
-                              {jogador.nome}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {jogador.spec} - {jogador.classe}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {jogador.realm}
-                            </p>
-                          </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-400 mt-1">
+                          {jogador.specIcon && (
+                            <div className="w-7 h-7 rounded-full border border-neutral-700 p-[2px] bg-black flex items-center justify-center">
+                              <Image
+                                src={jogador.specIcon}
+                                alt={jogador.spec ?? "Spec"}
+                                width={28}
+                                height={28}
+                                className="rounded-full"
+                              />
+                            </div>
+                          )}
+                          <span className="font-saira">
+                            {jogador.spec} - {jogador.classe}
+                          </span>
+                        </div>
+                      </div>
 
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <InfoLabel
-                              label="Nível"
-                              value={jogador.level?.toString() ?? "??"}
-                            />
-                            <InfoLabel
-                              label="iLvl"
-                              value={jogador.ilvl?.toString() ?? "??"}
-                            />
-                            <InfoLabel
-                              label="Role"
-                              value={jogador.role ?? "??"}
-                            />
-                            <InfoLabel
-                              label="Spec"
-                              value={jogador.spec ?? "??"}
-                            />
-                          </div>
+                      {/* 🏷️ Stats */}
+                      <div className="grid grid-cols-2 gap-3 text-sm border border-neutral-800 rounded-xl p-3 bg-[#141414cc] shadow-inner">
+                        <InfoLabel
+                          label="Nível"
+                          value={jogador.level?.toString() ?? "??"}
+                        />
+                        <InfoLabel
+                          label="iLvl"
+                          value={jogador.ilvl?.toString() ?? "??"}
+                        />
+                        <InfoLabel label="Role" value={jogador.role ?? "??"} />
+                        <InfoLabel label="Spec" value={jogador.spec ?? "??"} />
+                      </div>
 
+                      {/* 📞 Contatos */}
+                      {(jogador.discord ||
+                        jogador.battletag ||
+                        jogador.twitch) && (
+                        <div className="flex flex-col gap-2">
                           {jogador.discord && (
-                            <div className="flex items-center gap-2 text-sm text-[#5865F2] truncate">
-                              <Image
-                                src="/assets/icons/discord.png"
-                                alt="Discord"
-                                width={16}
-                                height={16}
-                                className="flex-shrink-0"
-                              />
-                              <span className="truncate">
-                                {jogador.discord}
-                              </span>
-                            </div>
+                            <ContactInfo
+                              icon="/assets/icons/discord.png"
+                              text={jogador.discord}
+                              color="text-[#5865F2]"
+                            />
                           )}
-
                           {jogador.battletag && (
-                            <div className="flex items-center gap-2 text-sm text-blue-300 truncate">
-                              <Image
-                                src="/assets/icons/battlenet.png"
-                                alt="Battle.net"
-                                width={16}
-                                height={16}
-                                className="flex-shrink-0"
-                              />
-                              <span className="truncate">
-                                {jogador.battletag}
-                              </span>
-                            </div>
+                            <ContactInfo
+                              icon="/assets/icons/battlenet.png"
+                              text={jogador.battletag}
+                              color="text-blue-300"
+                            />
                           )}
-
                           {jogador.twitch && (
-                            <div className="flex items-center gap-2 text-sm text-purple-400 truncate">
-                              <Image
-                                src="/assets/icons/twitch.png"
-                                alt="Twitch"
-                                width={16}
-                                height={16}
-                                className="flex-shrink-0"
-                              />
-                              <a
-                                href={`https://twitch.tv/${jogador.twitch}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="hover:underline truncate"
-                              >
-                                {jogador.twitch}
-                              </a>
-                            </div>
+                            <ContactInfo
+                              icon="/assets/icons/twitch.png"
+                              text={jogador.twitch}
+                              href={`https://twitch.tv/${jogador.twitch}`}
+                              color="text-purple-400"
+                            />
                           )}
-
-                          <div className="flex gap-4 justify-center">
-                            {[
-                              {
-                                href: `https://worldofwarcraft.com/pt-br/character/us/${jogador.realm}/${jogador.nome}`,
-                                img: "/assets/icons/armory.png",
-                                label: "Armory",
-                              },
-                              {
-                                href: `https://www.warcraftlogs.com/character/us/${jogador.realm}/${jogador.nome}`,
-                                img: "/assets/icons/warcraftlogs.png",
-                                label: "WCL",
-                              },
-                              {
-                                href: `https://raider.io/characters/us/${jogador.realm}/${jogador.nome}`,
-                                img: "/assets/icons/raiderio.png",
-                                label: "Raider.io",
-                              },
-                            ].map((link) => (
-                              <div
-                                key={link.label}
-                                className="flex flex-col items-center gap-1"
-                              >
-                                <a
-                                  href={link.href}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="p-2 rounded-lg bg-[#2a2a2a] hover:bg-[#333] transition cursor-pointer"
-                                  aria-label={link.label}
-                                >
-                                  <Image
-                                    src={link.img}
-                                    alt={link.label}
-                                    width={20}
-                                    height={20}
-                                  />
-                                </a>
-                                <span className="text-[10px] text-gray-400">
-                                  {link.label}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </motion.div>
+                        </div>
                       )}
-                    </AnimatePresence>
+
+                      {/* 🌐 Links externos */}
+                      <div className="flex gap-4 justify-center border-t border-neutral-800 pt-3">
+                        {[
+                          {
+                            href: `https://worldofwarcraft.com/pt-br/character/us/${jogador.realm}/${jogador.nome}`,
+                            img: "/assets/icons/armory.png",
+                            label: "Armory",
+                          },
+                          {
+                            href: `https://www.warcraftlogs.com/character/us/${jogador.realm}/${jogador.nome}`,
+                            img: "/assets/icons/warcraftlogs.png",
+                            label: "WCL",
+                          },
+                          {
+                            href: `https://raider.io/characters/us/${jogador.realm}/${jogador.nome}`,
+                            img: "/assets/icons/raiderio.png",
+                            label: "Raider.io",
+                          },
+                        ].map((link) => (
+                          <div
+                            key={link.label}
+                            className="flex flex-col items-center gap-1"
+                          >
+                            <a
+                              href={link.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 rounded-lg bg-[#2a2a2a] hover:bg-[#333] hover:shadow-[0_0_10px_#84cc16aa] transition cursor-pointer"
+                              aria-label={link.label}
+                            >
+                              <Image
+                                src={link.img}
+                                alt={link.label}
+                                width={20}
+                                height={20}
+                              />
+                            </a>
+                            <span className="text-[10px] text-gray-400">
+                              {link.label}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
                   </PopoverPanel>
                 )}
               </AnimatePresence>
@@ -271,6 +240,46 @@ function InfoLabel({ label, value }: { label: string; value: string }) {
     <div className="flex flex-col">
       <span className="text-gray-400 text-xs">{label}</span>
       <span className="font-medium truncate">{value}</span>
+    </div>
+  );
+}
+
+function ContactInfo({
+  icon,
+  text,
+  href,
+  color,
+}: {
+  icon: string;
+  text: string;
+  href?: string;
+  color: string;
+}) {
+  const content = (
+    <>
+      <Image
+        src={icon}
+        alt="icon"
+        width={16}
+        height={16}
+        className="flex-shrink-0"
+      />
+      <span className="truncate">{text}</span>
+    </>
+  );
+
+  return href ? (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`flex items-center gap-2 text-sm ${color} truncate hover:underline`}
+    >
+      {content}
+    </a>
+  ) : (
+    <div className={`flex items-center gap-2 text-sm ${color} truncate`}>
+      {content}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { BlizzardHttpClient } from "./BlizzardHttpClient";
+import { logInfo, logError } from "../utils/logger";
 
 export class BlizzardApi {
   private specRoleCache = new Map<string, "tank" | "healer" | "dps">();
@@ -9,30 +10,44 @@ export class BlizzardApi {
     const url = `https://${
       this.client.region
     }.api.blizzard.com/profile/wow/character/${realm.toLowerCase()}/${name.toLowerCase()}`;
-    return this.client.get<CharacterProfileResponse>(url, {
+    logInfo(`🔍 Buscando perfil: ${name} - ${realm}`, { url });
+
+    const res = await this.client.get<CharacterProfileResponse>(url, {
       namespace: `profile-${this.client.region}`,
     });
+
+    logInfo(`✅ Perfil encontrado: ${name} - ${realm}`, res);
+    return res;
   }
 
   async getCharacterAvatar(realm: string, name: string) {
     const url = `https://${
       this.client.region
     }.api.blizzard.com/profile/wow/character/${realm.toLowerCase()}/${name.toLowerCase()}/character-media`;
+    logInfo(`🔍 Buscando avatar: ${name} - ${realm}`, { url });
+
     const res = await this.client.get<CharacterMediaResponse>(url, {
       namespace: `profile-${this.client.region}`,
     });
 
-    return res.assets?.find((a) => a.key === "avatar")?.value ?? null;
+    const avatar = res.assets?.find((a) => a.key === "avatar")?.value ?? null;
+
+    logInfo(`🎨 Avatar encontrado: ${name} - ${realm}`, { avatar });
+    return avatar;
   }
 
   async getClassData(classId: number) {
     const url = `https://${this.client.region}.api.blizzard.com/data/wow/playable-class/${classId}`;
+    logInfo(`🔍 Buscando dados da classe ID ${classId}`, { url });
+
     const res = await this.client.get<ClassDataResponse>(url, {
       namespace: `static-${this.client.region}`,
     });
 
     const icon = res.media?.assets?.find((a) => a.key === "icon")?.value ?? "";
     const color = this.getClassColor(res.name);
+
+    logInfo(`🎯 Classe encontrada: ${res.name}`, { icon, color });
 
     return {
       id: res.id,
@@ -43,16 +58,27 @@ export class BlizzardApi {
     };
   }
 
-  async getSpecRole(
+  async getSpecData(
     href: string
-  ): Promise<"tank" | "healer" | "dps" | undefined> {
-    if (this.specRoleCache.has(href)) return this.specRoleCache.get(href);
+  ): Promise<{
+    role?: "tank" | "healer" | "dps";
+    icon?: string;
+    name?: string;
+  }> {
+    if (this.specRoleCache.has(href)) {
+      const cached = this.specRoleCache.get(href);
+      logInfo(`📦 Role carregado do cache`, { href, role: cached });
+      return { role: cached };
+    }
 
-    const res = await this.client.get<SpecResponse>(href, {
+    logInfo(`🔍 Buscando dados da spec`, { href });
+
+    // Busca o Spec
+    const specRes = await this.client.get<SpecResponse>(href, {
       namespace: `static-${this.client.region}`,
     });
 
-    const roleType = res.role?.type?.toLowerCase();
+    const roleType = specRes.role?.type?.toLowerCase();
     const role =
       roleType === "tank"
         ? "tank"
@@ -62,34 +88,66 @@ export class BlizzardApi {
         ? "dps"
         : undefined;
 
-    if (role) this.specRoleCache.set(href, role);
-    return role;
+    if (role) {
+      this.specRoleCache.set(href, role);
+      logInfo(`🎯 Role encontrado e salvo no cache`, { href, role });
+    } else {
+      logInfo(`❓ Role não identificado`, { href, response: specRes });
+    }
+
+    // 🔥 Busca o media (ícone) da spec
+    const mediaHref = specRes.media?.key?.href;
+    let icon: string | undefined = undefined;
+
+    if (mediaHref) {
+      const mediaRes = await this.client.get<SpecMediaResponse>(mediaHref, {
+        namespace: `static-${this.client.region}`,
+      });
+
+      icon = mediaRes.assets?.find((a) => a.key === "icon")?.value;
+    }
+
+    const name = specRes.name ?? undefined;
+
+    return { role, icon, name };
   }
 
   async getCompleteCharacterData(realm: string, name: string) {
-    const [profile, avatar] = await Promise.all([
-      this.getCharacterProfile(realm, name),
-      this.getCharacterAvatar(realm, name),
-    ]);
+    logInfo(`🚀 Iniciando busca completa para ${name} - ${realm}`);
 
-    const classData = await this.getClassData(profile.character_class.id);
-    const spec = profile.active_spec?.name || "";
-    const roleHref = profile.active_spec?.key?.href;
-    const role = roleHref ? await this.getSpecRole(roleHref) : undefined;
+    try {
+      const [profile, avatar] = await Promise.all([
+        this.getCharacterProfile(realm, name),
+        this.getCharacterAvatar(realm, name),
+      ]);
 
-    return {
-      nome: profile.name,
-      realm: profile.realm.slug,
-      classe: classData.name,
-      classe_en: classData.name_en,
-      color: classData.color, // 🔥 Aqui fica mais direto
-      icon: classData.icon,
-      spec,
-      role,
-      level: profile.level,
-      avatar: avatar ?? null,
-      ilvl: profile.equipped_item_level,
-    };
+      const classData = await this.getClassData(profile.character_class.id);
+      const spec = profile.active_spec?.name || "";
+      const roleHref = profile.active_spec?.key?.href;
+      const specData = roleHref ? await this.getSpecData(roleHref) : {};
+
+      const result = {
+        nome: profile.name,
+        realm: profile.realm.slug,
+        classe: classData.name,
+        classe_en: classData.name_en,
+        color: classData.color,
+        icon: classData.icon, // ícone da classe
+        spec: spec, // nome da spec
+        specIcon: specData.icon || "", // ícone da spec
+        role: specData.role, // role (tank, healer, dps)
+        level: profile.level,
+        avatar: avatar ?? null,
+        ilvl: profile.equipped_item_level,
+      };
+
+      logInfo(`✅ Dados completos para ${name} - ${realm}`, result);
+
+      return result;
+    } catch (error) {
+      logError(`🔥 Erro ao buscar dados de ${name} - ${realm}`, error);
+      throw error;
+    }
   }
 
   getClassColor(classe?: string): string {
@@ -117,6 +175,8 @@ export class BlizzardApi {
       conjurante: "#33937F",
     };
 
-    return map[sanitized] ?? "#FFFFFF";
+    const color = map[sanitized] ?? "#FFFFFF";
+    logInfo(`🎨 Cor da classe ${classe}: ${color}`);
+    return color;
   }
 }

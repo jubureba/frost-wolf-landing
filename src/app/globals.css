@@ -249,3 +249,74 @@ body {
     0 0 20px #bef264,
     0 0 30px #bef264;
 }
+
+/* Saira Condensed */
+@font-face {
+  font-family: 'Saira Condensed';
+  src: url('/fonts/SairaCondensed-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Roboto Regular */
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Roboto Bold */
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Roboto Thin */
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-Thin.ttf') format('truetype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-Regular.otf') format('truetype');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Classes utilitárias opcionais */
+.font-saira {
+  font-family: 'Saira Condensed', ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-roboto {
+  font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-inter {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+body { 
+   font-family: 'Roboto', ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background-color: #84cc16; /* Cor de fundo da seleção */
+  color: #000; /* Cor do texto selecionado */
+}
+
+::-moz-selection {
+  background-color: #84cc16;
+  color: #000;
+}

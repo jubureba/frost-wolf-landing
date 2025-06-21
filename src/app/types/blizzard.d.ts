@@ -11,9 +11,31 @@ type ClassDataResponse = {
 };
 
 type SpecResponse = {
+  id: number;
+  name: string;
+  description: string;
   role?: {
     type: string;
+    name: string;
   };
+  media: {
+    key: {
+      href: string;
+    };
+    id: number;
+  };
+  playable_class: {
+    key: {
+      href: string;
+    };
+    name: string;
+    id: number;
+  };
+};
+
+type SpecMediaResponse = {
+  assets: { key: string; value: string }[];
+  id: number;
 };
 
 type CharacterProfileResponse = {
@@ -28,7 +50,6 @@ type CharacterProfileResponse = {
   equipped_item_level: number;
 };
 
-
 type Jogador = {
   nome: string;
   realm: string;
@@ -37,13 +58,15 @@ type Jogador = {
   color?: string;
   classe?: string | null;
   spec?: string | null;
+  specIcon?: string | null;
+  icon?: string | null;
   level?: number | null;
   ilvl?: number | null;
   discord?: string;
   iddiscord?: number | null;
   battletag?: string;
   twitch?: string;
-}
+};
 
 type Core = {
   id: string;
@@ -55,4 +78,4 @@ type Core = {
   bossAtual: string;
   linkRecrutamento?: string;
   composicaoAtual: Jogador[];
-}
+};

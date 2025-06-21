@@ -3,11 +3,12 @@ import { useState, useEffect } from "react";
 import { CoreCard } from "./CoreCard";
 import { CoreEditor } from "./CoreEditor";
 import { saveCore, Core } from "../../lib/firestoreService";
+import { logInfo, logError } from "../../utils/logger";
 
-// Tempo de expiração do cache (6 horas)
+// 🔸 Tempo de expiração do cache (6 horas)
 const CACHE_EXPIRATION_MS = 6 * 60 * 60 * 1000;
 
-// Definição genérica para os dados do personagem
+// 🔸 Dados genéricos de personagem
 type CharacterData = Record<string, unknown>;
 
 // 🔸 Função para obter do cache
@@ -20,14 +21,14 @@ function getCachedCharacter(realm: string, name: string): CharacterData | null {
   try {
     const { data, timestamp } = JSON.parse(item);
     if (Date.now() - timestamp > CACHE_EXPIRATION_MS) {
-      console.log(`⏰ Cache expirado para ${name} - ${realm}`);
+      logInfo(`⏰ Cache expirado para ${name} - ${realm}`);
       localStorage.removeItem(key);
       return null;
     }
-    console.log(`✅ Pegando do cache: ${name} - ${realm}`);
+    logInfo(`✅ Pegando do cache: ${name} - ${realm}`);
     return data;
   } catch (error) {
-    console.error(`Erro ao parsear cache para ${name} - ${realm}`, error);
+    logError(`Erro ao parsear cache para ${name} - ${realm}`, error);
     localStorage.removeItem(key);
     return null;
   }
@@ -37,7 +38,7 @@ function getCachedCharacter(realm: string, name: string): CharacterData | null {
 function setCachedCharacter(realm: string, name: string, data: CharacterData) {
   const key = `char-${realm.toLowerCase()}-${name.toLowerCase()}`;
   localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
-  console.log(`💾 Salvando no cache: ${name} - ${realm}`);
+  logInfo(`💾 Salvando no cache: ${name} - ${realm}`);
 }
 
 export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
@@ -48,80 +49,84 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
   const [composicao, setComposicao] = useState(coreOriginal.composicaoAtual);
   const [loading, setLoading] = useState(true);
 
-  // Lista de jogadores recém adicionados para ignorar cache
   const [jogadoresNovos, setJogadoresNovos] = useState<Set<string>>(new Set());
 
+  // 🔸 Carregamento inicial
   useEffect(() => {
-    async function fetchAndCache() {
-      setLoading(true);
+    fetchAndCache();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-      const composicaoAtualizada = await Promise.all(
-        composicao.map(async (jogador) => {
-          const chave = `${jogador.realm.toLowerCase()}-${jogador.nome.toLowerCase()}`;
+  // 🔸 Quando adicionar jogadores novos, busca da API (ignora cache desses)
+  useEffect(() => {
+    if (jogadoresNovos.size > 0) {
+      fetchAndCache(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jogadoresNovos]);
 
-          if (!jogadoresNovos.has(chave)) {
-            const cached = getCachedCharacter(jogador.realm, jogador.nome);
-            if (cached) {
-              return { ...jogador, ...cached };
-            }
-          } else {
-            console.log(
-              `🔄 Ignorando cache para novo jogador ${jogador.nome} - ${jogador.realm}`
+  // 🔸 Função principal de busca
+  async function fetchAndCache(ignoreCache = false) {
+    setLoading(true);
+
+    const composicaoAtualizada = await Promise.all(
+      composicao.map(async (jogador) => {
+        const chave = `${jogador.realm.toLowerCase()}-${jogador.nome.toLowerCase()}`;
+
+        // Verifica cache (se permitido e não for novo)
+        if (!ignoreCache && !jogadoresNovos.has(chave)) {
+          const cached = getCachedCharacter(jogador.realm, jogador.nome);
+          if (cached) {
+            return { ...jogador, ...cached };
+          }
+        } else {
+          logInfo(
+            `🔄 Ignorando cache para ${jogador.nome} - ${jogador.realm}`
+          );
+        }
+
+        // Busca na API
+        try {
+          logInfo(`🌐 Buscando da API para ${jogador.nome} - ${jogador.realm}`);
+          const res = await fetch(
+            `/api/blizzard/character?realm=${encodeURIComponent(
+              jogador.realm
+            )}&name=${encodeURIComponent(jogador.nome)}`
+          );
+
+          if (!res.ok) {
+            logError(
+              `[ERRO] API falhou para ${jogador.nome}: ${res.status}`,
+              { status: res.status }
             );
+            return jogador;
           }
 
-          try {
-            console.log(
-              `[LOG] Buscando da API para ${jogador.nome} - ${jogador.realm}`
-            );
-            const res = await fetch(
-              `/api/blizzard/character?realm=${encodeURIComponent(
-                jogador.realm
-              )}&name=${encodeURIComponent(jogador.nome)}`
-            );
+          const dados = await res.json();
+          setCachedCharacter(jogador.realm, jogador.nome, dados);
 
-            if (!res.ok) {
-              console.error(
-                `[ERRO] API falhou para ${jogador.nome}: ${res.status}`
-              );
-              return jogador;
-            }
-
-            const dados = await res.json();
-            setCachedCharacter(jogador.realm, jogador.nome, dados);
-
-            // Remove da lista de novos após buscar da API
+          // Remove da lista de novos se estava lá
+          if (jogadoresNovos.has(chave)) {
             setJogadoresNovos((prev) => {
               const novoSet = new Set(prev);
               novoSet.delete(chave);
               return novoSet;
             });
-
-            return { ...jogador, ...dados };
-          } catch (err) {
-            console.error(
-              `[ERRO] Falha na requisição para ${jogador.nome}:`,
-              err
-            );
-            return jogador;
           }
-        })
-      );
 
-      // Só atualiza se houve alteração real
-      const composicaoStr = JSON.stringify(composicao);
-      const composicaoAtualizadaStr = JSON.stringify(composicaoAtualizada);
-      if (composicaoStr !== composicaoAtualizadaStr) {
-        setComposicao(composicaoAtualizada);
-      }
+          return { ...jogador, ...dados };
+        } catch (err) {
+          logError(`[ERRO] Falha na requisição para ${jogador.nome}`, err);
+          return jogador;
+        }
+      })
+    );
 
-      setLoading(false);
-    }
+    setComposicao(composicaoAtualizada);
+    setLoading(false);
+  }
 
-    fetchAndCache();
-  }, [composicao, jogadoresNovos]);
-
-  // Função que o editor chama para salvar e registrar jogadores novos
+  // 🔸 Função para salvar o core e identificar novos jogadores
   async function handleSalvarCore(coreAtualizado: Core) {
     setLoading(true);
     try {
@@ -144,8 +149,9 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
       });
 
       setJogadoresNovos(jogadoresNovosSet);
+      logInfo(`Core salvo com sucesso`, { coreAtualizado });
     } catch (error) {
-      console.error(error);
+      logError(`Erro ao salvar core`, error);
     } finally {
       setLoading(false);
     }
