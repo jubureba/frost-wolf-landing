@@ -6,80 +6,20 @@ import { useToast } from "../ui/ToastContainer";
 import { Pencil, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CardSkeleton } from "../layout/CardSkeleton";
+import { Checkbox } from "../ui/Checkbox";
+import { UserPlus, X } from "lucide-react";
+import { Tooltip } from "react-tooltip";
+import { InputField } from "../ui/InputField";
 
-// Checkbox com animação
-function Checkbox({
-  checked,
-  onChange,
-  label,
-  disabled,
+export function CoreEditor({
+  core,
+  onSave,
+  loading,
 }: {
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  label?: string;
-  disabled?: boolean;
-}) {
-  return (
-    <label
-      className={`inline-flex items-center cursor-pointer select-none ${
-        disabled ? "opacity-60 cursor-not-allowed" : ""
-      }`}
-    >
-      <div
-        className={`relative w-4 h-4 rounded-lg border-2 transition-colors flex justify-center items-center
-        ${
-          checked
-            ? "border-lime-500 bg-lime-600"
-            : "border-neutral-700 bg-neutral-800"
-        }
-        ${disabled ? "pointer-events-none" : "hover:border-lime-400"}`}
-        onClick={() => !disabled && onChange(!checked)}
-      >
-        <AnimatePresence>
-          {checked && (
-            <motion.svg
-              key="checkmark"
-              initial={{ scale: 0, rotate: -90, opacity: 0 }}
-              animate={{ scale: 1, rotate: 0, opacity: 1 }}
-              exit={{ scale: 0, rotate: 90, opacity: 0 }}
-              transition={{ duration: 0.25, ease: "easeInOut" }}
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="white"
-              strokeWidth={3}
-              className="w-4 h-4"
-            >
-              <motion.path
-                d="M5 13l4 4L19 7"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </motion.svg>
-          )}
-        </AnimatePresence>
-      </div>
-      {label && (
-        <span
-          className={`ml-3 text-sm font-semibold ${
-            disabled ? "text-gray-500" : "text-lime-400"
-          }`}
-          onClick={() => !disabled && onChange(!checked)}
-        >
-          {label}
-        </span>
-      )}
-    </label>
-  );
-}
-
-type CoreEditorProps = {
   core: Core;
   onSave: (coreAtualizado: Core) => Promise<void>;
   loading: boolean;
-};
-
-export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
+}) {
   const { showToast } = useToast();
 
   const [nome, setNome] = useState(core.nome);
@@ -195,11 +135,11 @@ export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-8 sm:p-10 bg-neutral-900 rounded-2xl border border-neutral-700 shadow-lg text-neutral-100 font-nunito select-none">
-      <h2 className="text-2xl sm:text-3xl font-semibold mb-8 text-lime-400">
-        Editar Core: <span className="text-white">{core.nome}</span>
+    <div className="max-w-5xl mx-auto p-8 sm:p-10 bg-neutral-950 rounded-2xl border border-neutral-800 shadow-lg text-neutral-100 font-nunito select-none">
+      <h2 className="text-3xl font-semibold mb-8 text-lime-400 font-saira">
+        Editando <span className="text-white">{core.nome}</span>
       </h2>
-
+      <div className="h-px w-full bg-neutral-800 mb-8" />
       {loading ? (
         <>
           {/* Skeleton dos inputs */}
@@ -247,7 +187,7 @@ export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1 font-saira">
                 Nome do Core
               </label>
               <input
@@ -261,7 +201,7 @@ export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1 font-saira">
                 Dia/Hora
               </label>
               <input
@@ -286,7 +226,7 @@ export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
                 />
                 <label
                   htmlFor="precisaDeInput"
-                  className="text-sm font-medium text-gray-400 select-none"
+                  className="text-sm font-medium text-gray-400 select-none font-saira"
                 >
                   Recrutando
                 </label>
@@ -313,7 +253,7 @@ export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1 font-saira">
                 Luta Atual
               </label>
               <input
@@ -327,7 +267,7 @@ export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-400 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1 font-saira">
                 Informações
               </label>
               <textarea
@@ -350,7 +290,7 @@ export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
                   transition={{ duration: 0.3, ease: "easeInOut" }}
                   className="sm:col-span-2 overflow-hidden"
                 >
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                  <label className="block text-sm font-medium text-gray-400 mb-1 font-saira">
                     Link de Recrutamento
                   </label>
                   <input
@@ -371,25 +311,35 @@ export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
           {/* Composição Atual */}
           <div>
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-semibold text-lime-400">
-                Composição Atual
+              <h3 className="text-xl font-semibold text-lime-400 font-saira">
+                Editar Composição de jogadores
               </h3>
-              <button
-                onClick={() => {
-                  setShowAddForm(!showAddForm);
-                  limparCampos();
-                }}
-                className={`px-4 py-2 rounded-xl transition font-semibold ${
-                  showAddForm
-                    ? "bg-red-600 hover:bg-red-700 text-white"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
-                }`}
-              >
-                {showAddForm ? "Cancelar" : "+ Adicionar Membro"}
-              </button>
+              <div>
+                <button
+                  data-tooltip-id="tooltipAdd"
+                  data-tooltip-content={
+                    showAddForm ? "Cancelar" : "Adicionar Jogador"
+                  }
+                  onClick={() => {
+                    setShowAddForm(!showAddForm);
+                    limparCampos();
+                  }}
+                  className={`p-2 rounded-xl border transition 
+        ${
+          showAddForm
+            ? "bg-neutral-800 border-red-600 text-red-500 hover:bg-red-600 hover:text-white"
+            : "bg-neutral-800 border-lime-400 text-lime-400 hover:bg-lime-400 hover:text-black"
+        }`}
+                >
+                  {showAddForm ? <X size={20} /> : <UserPlus size={20} />}
+                </button>
+                <Tooltip
+                  id="tooltipAdd"
+                  className="!z-50 !text-sm !rounded-lg"
+                />
+              </div>
             </div>
 
-            {/* Formulário de adicionar/editar */}
             <AnimatePresence>
               {showAddForm && (
                 <motion.div
@@ -398,48 +348,60 @@ export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="overflow-hidden bg-neutral-800 border border-neutral-700 rounded-xl p-5 mb-6 space-y-4"
+                  className="overflow-hidden bg-neutral-900 border border-neutral-700 rounded-2xl p-6 mb-8 space-y-6"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-                    <input
-                      placeholder="Nome *"
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-5">
+                    <InputField
+                      label="Nome *"
                       value={novoNome}
                       onChange={(e) => setNovoNome(e.target.value)}
-                      className="rounded-xl border border-neutral-600 bg-neutral-900 px-3 py-2 text-sm focus:ring-2 focus:ring-lime-500 focus:outline-none transition"
+                      required
                     />
-                    <input
-                      placeholder="Reino *"
+                    <InputField
+                      label="Reino *"
                       value={novoRealm}
                       onChange={(e) => setNovoRealm(e.target.value)}
-                      className="rounded-xl border border-neutral-600 bg-neutral-900 px-3 py-2 text-sm focus:ring-2 focus:ring-lime-500 focus:outline-none transition"
+                      required
                     />
-                    <input
-                      placeholder="Discord"
+                    <InputField
+                      label="Discord"
                       value={novoDiscord}
                       onChange={(e) => setNovoDiscord(e.target.value)}
-                      className="rounded-xl border border-neutral-600 bg-neutral-900 px-3 py-2 text-sm focus:ring-2 focus:ring-lime-500 focus:outline-none transition"
                     />
-                    <input
-                      placeholder="BattleTag"
+                    <InputField
+                      label="BattleTag"
                       value={novoBattletag}
                       onChange={(e) => setNovoBattletag(e.target.value)}
-                      className="rounded-xl border border-neutral-600 bg-neutral-900 px-3 py-2 text-sm focus:ring-2 focus:ring-lime-500 focus:outline-none transition"
                     />
-                    <input
-                      placeholder="Twitch"
+                    <InputField
+                      label="Twitch"
                       value={novoTwitch}
                       onChange={(e) => setNovoTwitch(e.target.value)}
-                      className="rounded-xl border border-neutral-600 bg-neutral-900 px-3 py-2 text-sm focus:ring-2 focus:ring-lime-500 focus:outline-none transition"
                     />
                   </div>
 
-                  <button
-                    onClick={adicionarOuEditarJogador}
-                    disabled={loading}
-                    className="bg-lime-600 hover:bg-lime-700 px-6 py-2 rounded-xl text-white font-semibold transition disabled:opacity-60"
-                  >
-                    {editIndex !== null ? "Salvar Edição" : "Adicionar Jogador"}
-                  </button>
+                  <div className="flex justify-end">
+                    <motion.button
+                      onClick={adicionarOuEditarJogador}
+                      disabled={loading}
+                      whileHover={{
+                        scale: 1.05,
+                        boxShadow: "0 0 12px rgb(163 230 53)",
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`inline-flex items-center justify-center gap-2 rounded-lg border border-lime-500 px-5 py-3 
+    ${
+      loading
+        ? "opacity-60 cursor-not-allowed"
+        : "text-lime-400 hover:bg-lime-500 hover:text-neutral-900"
+    } 
+    transition-colors duration-200 text-base font-semibold shadow-sm select-none`}
+                    >
+                      {editIndex !== null
+                        ? "Salvar Edição"
+                        : "Adicionar Jogador"}
+                    </motion.button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -452,13 +414,13 @@ export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
               <div className="overflow-x-auto mb-8">
                 <div
                   className="max-h-64 overflow-y-auto rounded-xl border border-neutral-700
-              scrollbar-thin scrollbar-thumb-lime-600 scrollbar-track-neutral-900 scrollbar-thumb-rounded"
+      scrollbar-thin scrollbar-thumb-lime-600 scrollbar-track-neutral-900 scrollbar-thumb-rounded"
                   style={{
                     scrollbarWidth: "thin",
                     scrollbarColor: "#84cc16 #1f1f1f",
                   }}
                 >
-                  <table className="w-full table-fixed border-collapse border border-neutral-700">
+                  <table className="w-full table-fixed border-collapse border border-neutral-700 text-gray-400 font-saira">
                     <thead className="bg-neutral-800 sticky top-0">
                       <tr>
                         <th className="p-2 text-left border-b border-neutral-700">
@@ -480,7 +442,9 @@ export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
                         <tr
                           key={`${player.nome}-${player.realm}`}
                           className={`${
-                            idx % 2 === 0 ? "bg-neutral-900" : "bg-neutral-800"
+                            idx % 2 === 0
+                              ? "bg-neutral-900 text-gray-400"
+                              : "bg-neutral-800 text-lime-400"
                           } hover:bg-neutral-700 transition-colors`}
                         >
                           <td className="p-2 border-b border-neutral-700">
@@ -489,30 +453,37 @@ export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
                           <td className="p-2 border-b border-neutral-700">
                             {player.realm}
                           </td>
-
                           <td className="p-2 border-b border-neutral-700">
                             {player.battletag || (
-                              <span className="text-gray-500 italic">-</span>
+                              <span className="italic">-</span>
                             )}
                           </td>
                           <td className="p-2 border-b border-neutral-700 text-center">
                             <div className="flex gap-3 justify-center">
                               <button
+                                data-tooltip-id={`tooltip-edit-${idx}`}
+                                data-tooltip-content="Editar"
                                 onClick={() => editarJogador(idx)}
-                                className="text-lime-400 hover:text-lime-500"
-                                title="Editar"
+                                className="text-lime-400 hover:text-lime-500 cursor-pointer"
                                 aria-label={`Editar ${player.nome}`}
                               >
                                 <Pencil size={18} />
                               </button>
+                              <Tooltip id={`tooltip-edit-${idx}`} place="top" />
+
                               <button
+                                data-tooltip-id={`tooltip-remove-${idx}`}
+                                data-tooltip-content="Remover"
                                 onClick={() => removerJogador(idx)}
-                                className="text-red-500 hover:text-red-600"
-                                title="Remover"
+                                className="text-red-500 hover:text-red-600 cursor-pointer"
                                 aria-label={`Remover ${player.nome}`}
                               >
                                 <Trash2 size={18} />
                               </button>
+                              <Tooltip
+                                id={`tooltip-remove-${idx}`}
+                                place="top"
+                              />
                             </div>
                           </td>
                         </tr>
@@ -524,13 +495,25 @@ export function CoreEditor({ core, onSave, loading }: CoreEditorProps) {
             )}
           </div>
 
-          <button
+          <motion.button
             onClick={salvarTudo}
             disabled={loading}
-            className="bg-lime-600 hover:bg-lime-700 px-6 py-3 rounded-xl text-white font-semibold w-full sm:w-auto transition disabled:opacity-60"
+            whileHover={
+              !loading
+                ? { scale: 1.05, boxShadow: "0 0 12px rgb(163 230 53)" }
+                : {}
+            }
+            whileTap={!loading ? { scale: 0.95 } : {}}
+            className={`inline-flex items-center justify-center rounded-lg border border-lime-500 px-5 py-3
+                        ${
+                          loading
+                            ? "opacity-60 cursor-not-allowed text-lime-400"
+                            : "text-lime-400 hover:bg-lime-500 hover:text-neutral-900"
+                        }
+                        transition-colors duration-200 text-base font-semibold shadow-sm select-none w-full sm:w-auto`}
           >
             {loading ? "Salvando..." : "Salvar Core"}
-          </button>
+          </motion.button>
         </>
       )}
     </div>

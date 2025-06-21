@@ -127,35 +127,51 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
   }
 
   // 🔸 Função para salvar o core e identificar novos jogadores
-  async function handleSalvarCore(coreAtualizado: Core) {
-    setLoading(true);
-    try {
-      await saveCore(coreAtualizado);
-      setCore(coreAtualizado);
-      setComposicao(coreAtualizado.composicaoAtual);
+// No handleSalvarCore
+async function handleSalvarCore(coreAtualizado: Core) {
+  setLoading(true);
+  try {
+    await saveCore(coreAtualizado);
+    setCore(coreAtualizado);
 
-      const jogadoresAnteriores = new Set(
-        core.composicaoAtual.map(
-          (p) => `${p.realm.toLowerCase()}-${p.nome.toLowerCase()}`
-        )
-      );
+    const jogadoresAnteriores = new Set(
+      core.composicaoAtual.map((p) => `${p.realm.toLowerCase()}-${p.nome.toLowerCase()}`)
+    );
 
-      const jogadoresNovosSet = new Set<string>();
-      coreAtualizado.composicaoAtual.forEach((p) => {
-        const chave = `${p.realm.toLowerCase()}-${p.nome.toLowerCase()}`;
-        if (!jogadoresAnteriores.has(chave)) {
-          jogadoresNovosSet.add(chave);
-        }
-      });
+    const jogadoresNovosSet = new Set<string>();
+    coreAtualizado.composicaoAtual.forEach((p) => {
+      const chave = `${p.realm.toLowerCase()}-${p.nome.toLowerCase()}`;
+      if (!jogadoresAnteriores.has(chave)) {
+        jogadoresNovosSet.add(chave);
+      }
+    });
 
-      setJogadoresNovos(jogadoresNovosSet);
-      logInfo(`Core salvo com sucesso`, { coreAtualizado });
-    } catch (error) {
-      logError(`Erro ao salvar core`, error);
-    } finally {
-      setLoading(false);
-    }
+    setJogadoresNovos((prev) => {
+      const isEqual =
+        prev.size === jogadoresNovosSet.size &&
+        [...prev].every((x) => jogadoresNovosSet.has(x));
+      if (isEqual) return prev;
+      return jogadoresNovosSet;
+    });
+
+    // Não setar composicao aqui para evitar re-render desnecessário / loop
+    // setComposicao(coreAtualizado.composicaoAtual);
+
+    logInfo(`Core salvo com sucesso`, { coreAtualizado });
+  } catch (error) {
+    logError(`Erro ao salvar core`, error);
+  } finally {
+    setLoading(false);
   }
+}
+
+// No useEffect jogadoresNovos
+useEffect(() => {
+  if (jogadoresNovos.size === 0) return;
+  fetchAndCache(true);
+}, [jogadoresNovos]);
+
+
 
   return (
     <div className="flex flex-col md:flex-row gap-8 max-w-7xl mx-auto p-4">
