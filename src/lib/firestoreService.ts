@@ -1,4 +1,6 @@
 import { db } from "./firebase";
+import { v4 as uuidv4 } from "uuid";
+
 import {
   collection,
   doc,
@@ -27,7 +29,7 @@ export type Core = {
   informacoes: string;
   dias: string;
   precisaDe: string;
-  recrutando?: boolean;
+  recrutando: boolean;
   bossAtual: string;
   linkRecrutamento?: string;
   composicaoAtual: Player[];
@@ -54,10 +56,14 @@ export function sanitizePlayer(player: unknown): Player {
 export const getCores = async (): Promise<Core[]> => {
   const coresCollection = collection(db, "cores");
   const snapshot = await getDocs(coresCollection);
-  return snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...(doc.data() as Omit<Core, "id">),
-  }));
+  return snapshot.docs.map((doc) => {
+    const data = doc.data() as Omit<Core, "id">;
+    return {
+      id: doc.id,
+      ...data,
+      recrutando: data.recrutando ?? false,
+    };
+  });
 };
 
 // 🔸 Atualizar dados de um core
@@ -160,3 +166,25 @@ export async function buscarDadosPersonagem(nome: string, realm: string) {
   }
   return res.json();
 }
+
+export const criarNovoCore = async (nome = "Novo Core"): Promise<Core> => {
+  const id = uuidv4();
+
+  const core: Core = {
+    id,
+    nome,
+    informacoes: "",
+    dias: "",
+    precisaDe: "Defina o recrutamento",
+    recrutando: false,
+    bossAtual: "",
+    linkRecrutamento: "",
+    composicaoAtual: [],
+  };
+
+  await setDoc(doc(db, "cores", id), core);
+
+  console.log(`✅ Core criado com ID ${id}`);
+
+  return core;
+};

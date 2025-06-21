@@ -1,63 +1,81 @@
+"use client";
+
 import { useAuth } from "../../context/AuthContext";
 import { useState, useEffect } from "react";
 import { CoreCard } from "./CoreCard";
 import { CoreEditor } from "./CoreEditor";
 import { saveCore, Core } from "../../lib/firestoreService";
-import { logInfo, logError } from "../../utils/logger";
+import { logError } from "../../utils/logger";
 
-// 🔸 Tempo de expiração do cache (6 horas)
 const CACHE_EXPIRATION_MS = 6 * 60 * 60 * 1000;
 
-// 🔸 Dados genéricos de personagem
 type CharacterData = Record<string, unknown>;
 
-// 🔸 Função para obter do cache
 function getCachedCharacter(realm: string, name: string): CharacterData | null {
   const key = `char-${realm.toLowerCase()}-${name.toLowerCase()}`;
   const item = localStorage.getItem(key);
-
   if (!item) return null;
-
   try {
     const { data, timestamp } = JSON.parse(item);
     if (Date.now() - timestamp > CACHE_EXPIRATION_MS) {
-      logInfo(`⏰ Cache expirado para ${name} - ${realm}`);
       localStorage.removeItem(key);
       return null;
     }
-    logInfo(`✅ Pegando do cache: ${name} - ${realm}`);
     return data;
-  } catch (error) {
-    logError(`Erro ao parsear cache para ${name} - ${realm}`, error);
+  } catch {
     localStorage.removeItem(key);
     return null;
   }
 }
 
-// 🔸 Função para salvar no cache
 function setCachedCharacter(realm: string, name: string, data: CharacterData) {
   const key = `char-${realm.toLowerCase()}-${name.toLowerCase()}`;
   localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
-  logInfo(`💾 Salvando no cache: ${name} - ${realm}`);
 }
 
-export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
-  const { user, loading: authLoading, role } = useAuth();
-  const showEditor = !authLoading && user && role === "RL";
+export function CoreWithEditor({
+  core: coreOriginal,
+  isEditing = false,
+  hideWhenEditing = false,
+  onStartEdit,
+  onFinishEdit,
+}: {
+  core: Core;
+  isEditing?: boolean;
+  hideWhenEditing?: boolean;
+  onStartEdit?: () => void;
+  onFinishEdit?: () => void;
+}) {
+  const { user, loading: authLoading } = useAuth();
+  const showEditButton = !authLoading && user != null;
 
   const [core, setCore] = useState(coreOriginal);
   const [composicao, setComposicao] = useState(coreOriginal.composicaoAtual);
   const [loading, setLoading] = useState(true);
-
   const [jogadoresNovos, setJogadoresNovos] = useState<Set<string>>(new Set());
 
-  // 🔸 Carregamento inicial
+  async function handleToggleEdit() {
+    if (isEditing) {
+      if (onFinishEdit) onFinishEdit();
+    } else {
+      if (onStartEdit) onStartEdit();
+    }
+  }
+
+  useEffect(() => {
+    console.log("Composição atualizada:", composicao);
+  }, [composicao]);
+
+  useEffect(() => {
+    setCore(coreOriginal);
+    setComposicao(coreOriginal.composicaoAtual);
+  }, [coreOriginal]);
+
   useEffect(() => {
     fetchAndCache();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 🔸 Quando adicionar jogadores novos, busca da API (ignora cache desses)
   useEffect(() => {
     if (jogadoresNovos.size > 0) {
       fetchAndCache(true);
@@ -65,7 +83,6 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jogadoresNovos]);
 
-  // 🔸 Função principal de busca
   async function fetchAndCache(ignoreCache = false) {
     setLoading(true);
 
@@ -73,39 +90,22 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
       composicao.map(async (jogador) => {
         const chave = `${jogador.realm.toLowerCase()}-${jogador.nome.toLowerCase()}`;
 
-        // Verifica cache (se permitido e não for novo)
         if (!ignoreCache && !jogadoresNovos.has(chave)) {
           const cached = getCachedCharacter(jogador.realm, jogador.nome);
-          if (cached) {
-            return { ...jogador, ...cached };
-          }
-        } else {
-          logInfo(
-            `🔄 Ignorando cache para ${jogador.nome} - ${jogador.realm}`
-          );
+          if (cached) return { ...jogador, ...cached };
         }
 
-        // Busca na API
         try {
-          logInfo(`🌐 Buscando da API para ${jogador.nome} - ${jogador.realm}`);
           const res = await fetch(
             `/api/blizzard/character?realm=${encodeURIComponent(
               jogador.realm
             )}&name=${encodeURIComponent(jogador.nome)}`
           );
-
-          if (!res.ok) {
-            logError(
-              `[ERRO] API falhou para ${jogador.nome}: ${res.status}`,
-              { status: res.status }
-            );
-            return jogador;
-          }
-
+          if (!res.ok) return jogador;
           const dados = await res.json();
+
           setCachedCharacter(jogador.realm, jogador.nome, dados);
 
-          // Remove da lista de novos se estava lá
           if (jogadoresNovos.has(chave)) {
             setJogadoresNovos((prev) => {
               const novoSet = new Set(prev);
@@ -115,8 +115,7 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
           }
 
           return { ...jogador, ...dados };
-        } catch (err) {
-          logError(`[ERRO] Falha na requisição para ${jogador.nome}`, err);
+        } catch {
           return jogador;
         }
       })
@@ -126,74 +125,78 @@ export function CoreWithEditor({ core: coreOriginal }: { core: Core }) {
     setLoading(false);
   }
 
-  // 🔸 Função para salvar o core e identificar novos jogadores
-// No handleSalvarCore
-async function handleSalvarCore(coreAtualizado: Core) {
-  setLoading(true);
-  try {
-    await saveCore(coreAtualizado);
-    setCore(coreAtualizado);
+  async function handleSalvarCore(coreAtualizado: Core) {
+    setLoading(true);
+    try {
+      await saveCore(coreAtualizado);
 
-    const jogadoresAnteriores = new Set(
-      core.composicaoAtual.map((p) => `${p.realm.toLowerCase()}-${p.nome.toLowerCase()}`)
-    );
+      // Atualiza o estado com nova referência para forçar renderização
+      setCore({
+        ...coreAtualizado,
+        composicaoAtual: [...coreAtualizado.composicaoAtual],
+      });
+      setComposicao([...coreAtualizado.composicaoAtual]);
 
-    const jogadoresNovosSet = new Set<string>();
-    coreAtualizado.composicaoAtual.forEach((p) => {
-      const chave = `${p.realm.toLowerCase()}-${p.nome.toLowerCase()}`;
-      if (!jogadoresAnteriores.has(chave)) {
-        jogadoresNovosSet.add(chave);
-      }
-    });
+      const jogadoresAnteriores = new Set(
+        coreOriginal.composicaoAtual.map(
+          (p) => `${p.realm.toLowerCase()}-${p.nome.toLowerCase()}`
+        )
+      );
 
-    setJogadoresNovos((prev) => {
-      const isEqual =
-        prev.size === jogadoresNovosSet.size &&
-        [...prev].every((x) => jogadoresNovosSet.has(x));
-      if (isEqual) return prev;
-      return jogadoresNovosSet;
-    });
+      const jogadoresNovosSet = new Set<string>();
+      coreAtualizado.composicaoAtual.forEach((p) => {
+        const chave = `${p.realm.toLowerCase()}-${p.nome.toLowerCase()}`;
+        if (!jogadoresAnteriores.has(chave)) {
+          jogadoresNovosSet.add(chave);
+        }
+      });
 
-    // Não setar composicao aqui para evitar re-render desnecessário / loop
-    // setComposicao(coreAtualizado.composicaoAtual);
-
-    logInfo(`Core salvo com sucesso`, { coreAtualizado });
-  } catch (error) {
-    logError(`Erro ao salvar core`, error);
-  } finally {
-    setLoading(false);
+      setJogadoresNovos(jogadoresNovosSet);
+    } catch (error) {
+      logError(`Erro ao salvar core`, error);
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
-// No useEffect jogadoresNovos
-useEffect(() => {
-  if (jogadoresNovos.size === 0) return;
-  fetchAndCache(true);
-}, [jogadoresNovos]);
-
-
+  if (hideWhenEditing) {
+    return null;
+  }
 
   return (
-    <div className="flex flex-col md:flex-row gap-8 max-w-7xl mx-auto p-4">
-      <div className="min-w-[600px] flex-shrink-0">
+    <div className="flex flex-col gap-2">
+      {isEditing ? (
+        <div className="grid grid-cols-1 lg:grid-cols-[900px_700px] gap-4">
+          <CoreCard
+            key={`${core.id}-${composicao.length}`}
+            core={{
+              ...core,
+              composicaoAtual: composicao,
+              recrutando: core.recrutando ?? false,
+            }}
+            loading={loading}
+            onEditClick={handleToggleEdit}
+            showEditor={showEditButton}
+          />
+          <CoreEditor
+            core={{ ...core, composicaoAtual: composicao }}
+            onSave={handleSalvarCore}
+            loading={loading}
+            onCancel={onFinishEdit}
+          />
+        </div>
+      ) : (
         <CoreCard
+          key={`${core.id}-${composicao.length}`}
           core={{
             ...core,
             composicaoAtual: composicao,
             recrutando: core.recrutando ?? false,
           }}
           loading={loading}
+          onEditClick={handleToggleEdit}
+          showEditor={showEditButton}
         />
-      </div>
-
-      {showEditor && (
-        <div className="flex-1 min-w-[600px]">
-          <CoreEditor
-            core={{ ...core, composicaoAtual: composicao }}
-            onSave={handleSalvarCore}
-            loading={loading}
-          />
-        </div>
       )}
     </div>
   );

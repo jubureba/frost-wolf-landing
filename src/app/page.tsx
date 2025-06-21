@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getCores } from "../lib/firestoreService";
+import { criarNovoCore, getCores, Core } from "../lib/firestoreService";
 import { CoreWithEditor } from "../components/core/CoreWithEditor";
 import { Header } from "../components/layout/Header";
 import { Filters } from "../components/layout/Filters";
@@ -9,6 +9,7 @@ import { FloatingButton } from "../components/layout/FloatingButton";
 
 export default function Home() {
   const [cores, setCores] = useState<Core[]>([]);
+  const [editingCoreId, setEditingCoreId] = useState<string | null>(null); // controle de edição
 
   useEffect(() => {
     async function fetch() {
@@ -30,13 +31,27 @@ export default function Home() {
       <Header />
       <Filters />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {cores.map((core) => (
-          <CoreWithEditor key={core.id} core={core} />
+          <CoreWithEditor
+            key={core.id}
+            core={core}
+            isEditing={editingCoreId === core.id}
+            hideWhenEditing={
+              editingCoreId !== null && editingCoreId !== core.id
+            }
+            onStartEdit={() => setEditingCoreId(core.id)}
+            onFinishEdit={() => setEditingCoreId(null)}
+          />
         ))}
       </div>
 
-      <FloatingButton action={async () => alert("Criar core")}>
+      <FloatingButton
+        action={async () => {
+          const novoCore = await criarNovoCore();
+          setCores((prev) => [...prev, novoCore]);
+        }}
+      >
         +
       </FloatingButton>
     </main>

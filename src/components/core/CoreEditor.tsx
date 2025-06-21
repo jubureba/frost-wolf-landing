@@ -15,10 +15,12 @@ export function CoreEditor({
   core,
   onSave,
   loading,
+  onCancel, // opcional
 }: {
   core: Core;
   onSave: (coreAtualizado: Core) => Promise<void>;
   loading: boolean;
+  onCancel?: () => void;
 }) {
   const { showToast } = useToast();
 
@@ -135,11 +137,24 @@ export function CoreEditor({
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-8 sm:p-10 bg-neutral-950 rounded-2xl border border-neutral-800 shadow-lg text-neutral-100 font-nunito select-none">
-      <h2 className="text-3xl font-semibold mb-8 text-lime-400 font-saira">
-        Editando <span className="text-white">{core.nome}</span>
-      </h2>
+     <div className="max-w-5xl mx-auto p-8 sm:p-10 bg-neutral-950 rounded-2xl border border-neutral-800 shadow-lg text-neutral-100 font-nunito select-none">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-3xl font-semibold text-lime-400 font-saira">
+          Editando <span className="text-white">{core.nome}</span>
+        </h2>
+        {onCancel && (
+          <button
+            onClick={onCancel}
+            disabled={loading}
+            className="text-red-500 hover:text-red-600 font-semibold rounded px-3 py-1 border border-red-500 hover:bg-red-500 hover:text-white transition"
+          >
+            Cancelar
+          </button>
+        )}
+      </div>
+
       <div className="h-px w-full bg-neutral-800 mb-8" />
+
       {loading ? (
         <>
           {/* Skeleton dos inputs */}

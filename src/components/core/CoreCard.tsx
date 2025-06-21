@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { JogadorCard } from "./JogadorCard";
 import { motion, AnimatePresence } from "framer-motion";
+import { Pencil } from "lucide-react";
 
 export default function Dashboard() {
   const [core, setCore] = useState<Core | null>(null);
@@ -33,30 +34,40 @@ export default function Dashboard() {
 export function CoreCard({
   core,
   loading,
+  onEditClick,
+  showEditor,
 }: {
   core: Core | null;
   loading: boolean;
+  onEditClick?: () => void;
+  showEditor?: boolean;
 }) {
   const grouped = agruparPorRole(core?.composicaoAtual ?? []);
   const totalPlayers = core?.composicaoAtual.length ?? 0;
 
   return (
-    <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 sm:p-10 shadow-xl text-white font-nunito max-w-5xl w-full flex flex-col">
+    <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 sm:p-10 shadow-xl text-white font-nunito w-full flex flex-col">
       <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 mb-8">
-        <div className="flex flex-col gap-2 max-w-xl">
+        <div className="flex flex-col max-w-xl">
           {loading ? (
-            <>
-              <div className="h-10 w-56 shimmer rounded" />
-              <div className="h-5 w-80 shimmer rounded mt-1" />
-            </>
+            <div className="h-10 w-56 shimmer rounded" />
           ) : (
             <>
               <h2 className="text-4xl font-extrabold text-lime-400 leading-tight font-saira">
                 {core?.nome}
               </h2>
-              <p className="text-gray-400 mt-2 leading-relaxed font-saira">
-                {core?.informacoes}
-              </p>
+
+              {showEditor && onEditClick && (
+                <button
+                  onClick={onEditClick}
+                  aria-label="Editar Core"
+                  className="mt-1 flex items-center gap-1 text-gray-400 hover:text-lime-600 font-saira text-sm transition-colors px-1 py-0 leading-none"
+                  type="button"
+                >
+                  <span>Editar Core</span>
+                  <Pencil size={8} />
+                </button>
+              )}
             </>
           )}
         </div>
@@ -66,10 +77,7 @@ export function CoreCard({
             href={core.linkRecrutamento}
             target="_blank"
             rel="noopener noreferrer"
-            whileHover={{
-              scale: 1.05,
-              boxShadow: "0 0 12px rgb(163 230 53)",
-            }}
+            whileHover={{ scale: 1.05, boxShadow: "0 0 12px rgb(163 230 53)" }}
             whileTap={{ scale: 0.95 }}
             className="inline-flex items-center gap-2 rounded-lg border border-lime-500 px-5 py-3 text-lime-400 hover:bg-lime-500 hover:text-neutral-900 transition-colors duration-200 text-base font-semibold shadow-sm select-none"
           >
