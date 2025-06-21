@@ -28,6 +28,7 @@ export function NovoCoreEditor() {
       precisaDe,
       bossAtual,
       composicaoAtual: [],
+      recrutando: false
     };
 
     setLoading(true);
