@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "release": "standard-version"
+    "release": "standard-version",
+    "release:push": "npm run release && git push --follow-tags origin main"
   },
   "engines": {
     "node": "18.x"

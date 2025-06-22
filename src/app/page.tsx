@@ -6,6 +6,7 @@ import { CoreWithEditor } from "../components/core/CoreWithEditor";
 import { Header } from "../components/layout/Header";
 import { Filters } from "../components/layout/Filters";
 import { FloatingButton } from "../components/layout/FloatingButton";
+import { Footer } from "../components/layout/Footer";
 
 export default function Home() {
   const [cores, setCores] = useState<Core[]>([]);
@@ -27,11 +28,11 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[#121212] p-4 sm:p-6">
+    <main className="min-h-screen bg-[#121212] p-4 sm:p-6 flex flex-col">
       <Header />
       <Filters />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {cores.map((core) => (
           <CoreWithEditor
             key={core.id}
@@ -54,6 +55,9 @@ export default function Home() {
       >
         +
       </FloatingButton>
+
+      {/* Rodapé */}
+      <Footer />
     </main>
   );
 }
