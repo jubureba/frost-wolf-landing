@@ -1,21 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Core, Player } from "../../lib/firestoreService";
 import { useToast } from "../ui/ToastContainer";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, UserPlus, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CardSkeleton } from "../layout/CardSkeleton";
-import { Checkbox } from "../ui/Checkbox";
-import { UserPlus, X } from "lucide-react";
 import { Tooltip } from "react-tooltip";
+import { Checkbox } from "../ui/Checkbox";
 import { InputField } from "../ui/InputField";
+import { DiasHorarioSelector } from "../ui/DiasHorarioSelector";
+import { CardSkeleton } from "../layout/CardSkeleton";
 
 export function CoreEditor({
   core,
   onSave,
   loading,
-  onCancel, // opcional
+  onCancel,
 }: {
   core: Core;
   onSave: (coreAtualizado: Core) => Promise<void>;
@@ -26,7 +26,6 @@ export function CoreEditor({
 
   const [nome, setNome] = useState(core.nome);
   const [informacoes, setInformacoes] = useState(core.informacoes || "");
-  const [dias, setDias] = useState(core.dias || "");
   const [precisaDe, setPrecisaDe] = useState(core.precisaDe || "");
   const [bossAtual, setBossAtual] = useState(core.bossAtual || "");
   const [composicao, setComposicao] = useState<Player[]>(
@@ -36,6 +35,10 @@ export function CoreEditor({
   const [linkRecrutamento, setLinkRecrutamento] = useState(
     core.linkRecrutamento || ""
   );
+
+  const [diasSelecionados, setDiasSelecionados] = useState<string[]>([]);
+  const [horaInicio, setHoraInicio] = useState("");
+  const [horaFim, setHoraFim] = useState("");
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [editIndex, setEditIndex] = useState<number | null>(null);
@@ -55,9 +58,43 @@ export function CoreEditor({
     setEditIndex(null);
   }
 
+  type DiasEHorario = {
+    diasSelecionados: string[];
+    horaInicio: string;
+    horaFim: string;
+  };
+
+  function preencherDiasEHorarios(dados: Partial<DiasEHorario>) {
+    if (!dados) return;
+
+    if (Array.isArray(dados.diasSelecionados)) {
+      setDiasSelecionados(dados.diasSelecionados);
+    }
+    if (dados.horaInicio) {
+      setHoraInicio(dados.horaInicio);
+    }
+    if (dados.horaFim) {
+      setHoraFim(dados.horaFim);
+    }
+  }
+
+  useEffect(() => {
+    if (core?.dias) {
+      preencherDiasEHorarios(core.dias);
+    }
+  }, [core]);
+
   async function salvarTudo() {
     if (!nome.trim()) {
       showToast("Nome do Core é obrigatório.", "error");
+      return;
+    }
+    if (diasSelecionados.length === 0) {
+      showToast("Selecione pelo menos um dia.", "error");
+      return;
+    }
+    if (!horaInicio || !horaFim) {
+      showToast("Informe o horário de início e fim.", "error");
       return;
     }
 
@@ -65,7 +102,11 @@ export function CoreEditor({
       ...core,
       nome,
       informacoes,
-      dias,
+      dias: {
+        diasSelecionados,
+        horaInicio,
+        horaFim,
+      },
       precisaDe: recrutando ? precisaDe : "Não estamos recrutando no momento",
       bossAtual,
       composicaoAtual: composicao,
@@ -137,7 +178,7 @@ export function CoreEditor({
   }
 
   return (
-     <div className="max-w-5xl mx-auto p-8 sm:p-10 bg-neutral-950 rounded-2xl border border-neutral-800 shadow-lg text-neutral-100 font-nunito select-none">
+    <div className="max-w-5xl mx-auto p-8 sm:p-10 bg-neutral-950 rounded-2xl border border-neutral-800 shadow-lg text-neutral-100 font-nunito select-none">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-semibold text-lime-400 font-saira">
           Editando <span className="text-white">{core.nome}</span>
@@ -157,7 +198,6 @@ export function CoreEditor({
 
       {loading ? (
         <>
-          {/* Skeleton dos inputs */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
             <div className="space-y-2">
               <div className="h-5 w-32 shimmer rounded" />
@@ -175,14 +215,12 @@ export function CoreEditor({
 
           <hr className="my-10 border-neutral-700" />
 
-          {/* Skeleton da seção Composição Atual */}
           <div>
             <div className="flex justify-between items-center mb-6">
               <div className="h-7 w-48 shimmer rounded" />
               <div className="h-10 w-36 shimmer rounded-xl" />
             </div>
 
-            {/* Skeleton da lista de jogadores */}
             <div className="flex flex-wrap gap-4 mb-8">
               {Array.from({ length: 6 }).map((_, i) => (
                 <CardSkeleton
@@ -216,16 +254,14 @@ export function CoreEditor({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1 font-saira">
-                Dia/Hora
-              </label>
-              <input
-                type="text"
-                placeholder="Quando ocorrem as runs"
-                value={dias}
-                onChange={(e) => setDias(e.target.value)}
+              <DiasHorarioSelector
+                diasSelecionados={diasSelecionados}
+                setDiasSelecionados={setDiasSelecionados}
+                horaInicio={horaInicio}
+                setHoraInicio={setHoraInicio}
+                horaFim={horaFim}
+                setHoraFim={setHoraFim}
                 disabled={loading}
-                className="w-full rounded-xl border border-neutral-700 bg-neutral-800 px-4 py-2 text-sm focus:ring-2 focus:ring-lime-500 focus:outline-none transition disabled:opacity-60"
               />
             </div>
 

@@ -45,6 +45,20 @@ export function CoreCard({
   const grouped = agruparPorRole(core?.composicaoAtual ?? []);
   const totalPlayers = core?.composicaoAtual.length ?? 0;
 
+  function formatarDias(dias?: {
+    diasSelecionados: string[];
+    horaInicio: string;
+    horaFim: string;
+  }): string {
+    if (!dias) return "Nenhum dia selecionado";
+
+    const { diasSelecionados, horaInicio, horaFim } = dias;
+    if (!diasSelecionados == null || !horaInicio || !horaFim)
+      return "Nenhum dia selecionado";
+
+    return `${diasSelecionados.join(", ")} das ${horaInicio} às ${horaFim}`;
+  }
+
   return (
     <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 sm:p-10 shadow-xl text-white font-nunito w-full flex flex-col">
       <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 mb-8">
@@ -89,7 +103,7 @@ export function CoreCard({
       <div className="flex flex-wrap gap-10 text-sm text-gray-300 border-t border-neutral-800 pt-6 ">
         <Info
           label="🗓️ Dia/Hora"
-          value={core?.dias}
+          value={formatarDias(core?.dias)}
           loading={loading}
           compact
         />

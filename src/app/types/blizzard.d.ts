@@ -72,10 +72,15 @@ type Core = {
   id: string;
   nome: string;
   informacoes: string;
-  dias: string;
+  dias: {
+    diasSelecionados: string[];
+    horaInicio: string;
+    horaFim: string;
+  };
   precisaDe: string;
   recrutando: boolean;
   bossAtual: string;
   linkRecrutamento?: string;
   composicaoAtual: Jogador[];
 };
+

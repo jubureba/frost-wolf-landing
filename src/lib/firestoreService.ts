@@ -27,7 +27,11 @@ export type Core = {
   id: string;
   nome: string;
   informacoes: string;
-  dias: string;
+  dias: {
+    diasSelecionados: string[];
+    horaInicio: string;
+    horaFim: string;
+  };
   precisaDe: string;
   recrutando: boolean;
   bossAtual: string;
@@ -174,7 +178,11 @@ export const criarNovoCore = async (nome = "Novo Core"): Promise<Core> => {
     id,
     nome,
     informacoes: "",
-    dias: "",
+    dias: {
+      diasSelecionados: [],
+      horaInicio: "",
+      horaFim: "",
+    },
     precisaDe: "Defina o recrutamento",
     recrutando: false,
     bossAtual: "",
