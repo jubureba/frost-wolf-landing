@@ -82,7 +82,7 @@ export function CoreEditor({
     if (core?.dias) {
       preencherDiasEHorarios(core.dias);
     }
-  }, [core]);
+  }, [core, preencherDiasEHorarios]);
 
   async function salvarTudo() {
     if (!nome.trim()) {
