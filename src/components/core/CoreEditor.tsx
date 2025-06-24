@@ -82,7 +82,8 @@ export function CoreEditor({
     if (core?.dias) {
       preencherDiasEHorarios(core.dias);
     }
-  }, [core, preencherDiasEHorarios]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [core]);
 
   async function salvarTudo() {
     if (!nome.trim()) {
