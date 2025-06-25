@@ -46,8 +46,12 @@ export function CoreWithEditor({
   onStartEdit?: () => void;
   onFinishEdit?: () => void;
 }) {
-  const { user, loading: authLoading } = useAuth();
-  const showEditButton = !authLoading && user != null;
+  const { user, role, coreId, loading: authLoading } = useAuth();
+
+  const canEdit =
+    !authLoading &&
+    user != null &&
+    (role === "ADMIN" || (role === "RL" && coreId === coreOriginal.id));
 
   const [core, setCore] = useState(coreOriginal);
   const [composicao, setComposicao] = useState(coreOriginal.composicaoAtual);
@@ -130,7 +134,6 @@ export function CoreWithEditor({
     try {
       await saveCore(coreAtualizado);
 
-      // Atualiza o estado com nova referência para forçar renderização
       setCore({
         ...coreAtualizado,
         composicaoAtual: [...coreAtualizado.composicaoAtual],
@@ -176,7 +179,7 @@ export function CoreWithEditor({
             }}
             loading={loading}
             onEditClick={handleToggleEdit}
-            showEditor={showEditButton}
+            showEditor={canEdit}
           />
           <CoreEditor
             core={{ ...core, composicaoAtual: composicao }}
@@ -195,7 +198,7 @@ export function CoreWithEditor({
           }}
           loading={loading}
           onEditClick={handleToggleEdit}
-          showEditor={showEditButton}
+          showEditor={canEdit}
         />
       )}
     </div>

@@ -1,22 +1,18 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useRef, useEffect, useState } from "react";
+import { signOut } from "firebase/auth";
 import { auth } from "../lib/firebase";
-import { onAuthStateChanged, signOut, User } from "firebase/auth";
-import { LoginGoogleButton } from "./ui/GlowOnHoverButton";
+import { LoginGoogleButton } from "./ui/LoginGoogleButton";
 import { motion } from "framer-motion";
+import { useAuth } from "../context/AuthContext"; // ajuste o caminho se necessário
 
 export function UserStatus() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, role, coreName, loading } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setDropdownOpen(false);
-    });
-
     function handleClickOutside(event: MouseEvent) {
       if (
         dropdownRef.current &&
@@ -28,7 +24,6 @@ export function UserStatus() {
     document.addEventListener("mousedown", handleClickOutside);
 
     return () => {
-      unsubscribe();
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
@@ -41,6 +36,8 @@ export function UserStatus() {
       console.error("Erro ao sair:", error);
     }
   }
+
+  if (loading) return null;
 
   if (!user) {
     return <LoginGoogleButton />;
@@ -71,7 +68,6 @@ export function UserStatus() {
         }}
       >
         {user.photoURL ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={user.photoURL}
             alt={user.displayName ?? "Avatar"}
@@ -110,33 +106,19 @@ export function UserStatus() {
       </motion.button>
 
       {dropdownOpen && (
-        <div  className="absolute right-0 mt-2 w-36 rounded-md shadow-lg py-2 z-50
-      bg-transparent backdrop-blur-sm">
+        <div
+          className="absolute right-0 mt-2 w-44 rounded-md shadow-lg py-2 z-50
+            bg-transparent backdrop-blur-sm text-sm"
+        >
+          <div className="px-5 py-1 text-lime-400">
+            <p className="font-semibold">Função: {role ?? "?"}</p>
+            <p className="font-semibold">Core: {coreName ?? "?"}</p>
+          </div>
+          <hr className="my-1 border-lime-500" />
           <button
             onClick={handleLogout}
-            className="
-                      w-full
-                      text-left
-                      px-5
-                      py-2.5
-                      text-red-500
-                      font-semibold
-                      border
-                      border-red-500
-                      rounded-xl
-                      bg-transparent
-                      transition
-                      duration-300
-                      ease-in-out
-                      shadow-none
-                      hover:bg-red-600
-                      hover:text-white
-                      hover:shadow-[0_0_10px_3px_rgba(220,38,38,0.9)]
-                      focus:outline-none
-                      focus:ring-2
-                      focus:ring-red-500
-                      focus:ring-opacity-75
-                    ">
+            className="w-full text-left px-5 py-2.5 text-red-500 font-semibold border border-red-500 rounded-xl bg-transparent transition duration-300 ease-in-out shadow-none hover:bg-red-600 hover:text-white hover:shadow-[0_0_10px_3px_rgba(220,38,38,0.9)] focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75"
+          >
             Sair
           </button>
         </div>

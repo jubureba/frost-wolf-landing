@@ -7,10 +7,12 @@ import { Header } from "../components/layout/Header";
 import { Filters } from "../components/layout/Filters";
 import { FloatingButton } from "../components/layout/FloatingButton";
 import { Footer } from "../components/layout/Footer";
+import { useAuth } from "../context/AuthContext";
 
 export default function Home() {
+  const { role, coreId: userCoreId } = useAuth();
   const [cores, setCores] = useState<Core[]>([]);
-  const [editingCoreId, setEditingCoreId] = useState<string | null>(null); // controle de edição
+  const [editingCoreId, setEditingCoreId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetch() {
@@ -27,6 +29,14 @@ export default function Home() {
     fetch();
   }, []);
 
+  function handleStartEdit(coreId: string) {
+    if (role === "ADMIN" || (role === "RL" && userCoreId === coreId)) {
+      setEditingCoreId(coreId);
+    } else {
+      alert("Você não tem permissão para editar este core.");
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#121212] p-4 sm:p-6 flex flex-col">
       <Header />
@@ -38,10 +48,8 @@ export default function Home() {
             key={core.id}
             core={core}
             isEditing={editingCoreId === core.id}
-            hideWhenEditing={
-              editingCoreId !== null && editingCoreId !== core.id
-            }
-            onStartEdit={() => setEditingCoreId(core.id)}
+            hideWhenEditing={editingCoreId !== null && editingCoreId !== core.id}
+            onStartEdit={() => handleStartEdit(core.id)}
             onFinishEdit={() => setEditingCoreId(null)}
           />
         ))}
@@ -56,7 +64,6 @@ export default function Home() {
         +
       </FloatingButton>
 
-      {/* Rodapé */}
       <Footer />
     </main>
   );

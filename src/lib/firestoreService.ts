@@ -1,6 +1,5 @@
 import { db } from "./firebase";
 import { v4 as uuidv4 } from "uuid";
-
 import {
   collection,
   doc,
@@ -12,6 +11,12 @@ import {
   arrayUnion,
   arrayRemove,
 } from "firebase/firestore";
+
+export type Usuario = {
+  email: string;
+  role: string; // exemplo: "RL", "USER"
+  core: string; // exemplo: "Core A"
+};
 
 // Tipagem do player
 export type Player = {
@@ -38,7 +43,34 @@ export type Core = {
   linkRecrutamento?: string;
   composicaoAtual: Player[];
 };
+// FUNÇÕES DO USUARIO //
+// Cria ou atualiza o usuário no Firestore
+export const salvarOuAtualizarUsuario = async (
+  uid: string,
+  data: Partial<Usuario>
+) => {
+  const userRef = doc(db, "users", uid);
+  const userSnap = await getDoc(userRef);
 
+  if (userSnap.exists()) {
+    await updateDoc(userRef, data);
+    console.log(`👤 Usuário ${uid} atualizado.`);
+  } else {
+    await setDoc(userRef, data);
+    console.log(`🆕 Usuário ${uid} criado.`);
+  }
+};
+
+export const buscarUsuario = async (uid: string): Promise<Usuario | null> => {
+  const userRef = doc(db, "users", uid);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) return null;
+
+  return userSnap.data() as Usuario;
+};
+
+// FUNÇÕES DO CORE //
 // 🔧 Função utilitária segura
 export function sanitizePlayer(player: unknown): Player {
   if (typeof player !== "object" || player === null) {
