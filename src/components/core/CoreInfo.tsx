@@ -25,7 +25,7 @@ export function CoreInfo({
       ) : (
         <span
           className={`text-gray-400 font-medium font-saira ${
-            compact ? "text-sm truncate" : ""
+            compact ? "text-sm break-words" : ""
           }`}
         >
           {value || "-"}

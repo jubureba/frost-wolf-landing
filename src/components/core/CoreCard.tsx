@@ -1,6 +1,11 @@
 "use client";
 
-import { agruparPorRole, formatarDias, isMelee, isRanged } from "@/lib/coreUtils";
+import {
+  agruparPorRole,
+  formatarDias,
+  isMelee,
+  isRanged,
+} from "@/lib/coreUtils";
 import { CoreGrupo } from "./CoreGrupo";
 import { CoreInfo } from "./CoreInfo";
 import { Pencil, Trash2 } from "lucide-react";
@@ -83,41 +88,79 @@ export function CoreCard({
               href={core.linkRecrutamento}
               target="_blank"
               rel="noopener noreferrer"
-              whileHover={{ scale: 1.05, boxShadow: "0 0 12px rgb(163 230 53)" }}
+              whileHover={{
+                scale: 1.05,
+                boxShadow: "0 0 12px rgb(163 230 53)",
+              }}
               whileTap={{ scale: 0.95 }}
               className="inline-flex items-center gap-2 rounded-lg border border-lime-500 px-5 py-3 text-lime-400 hover:bg-lime-500 hover:text-neutral-900 transition-colors duration-200 text-base font-semibold shadow-sm select-none"
             >
-              📝 Quero me candidatar
+              Quero me candidatar
             </motion.a>
           )}
         </div>
       </header>
 
-      <div className="flex flex-wrap gap-10 text-sm text-gray-300 border-t border-neutral-800 pt-6">
-        <CoreInfo label="🗓️ Dia/Hora" value={formatarDias(core?.dias)} loading={loading} compact />
-        <CoreInfo label="🎯 Recrutando" value={core?.precisaDe} loading={loading} compact />
-        <CoreInfo label="⚔️ Luta Atual" value={core?.bossAtual} loading={loading} compact />
-        <CoreInfo label="👥 Total de Players" value={`${totalPlayers}`} loading={loading} compact />
-      </div>
+      <div
+  className="grid grid-cols-2 gap-x-10 gap-y-6 text-sm text-gray-300 border border-neutral-700 pt-6 rounded-lg sticky top-0 z-10 p-4"
+  style={{ backgroundColor: "#121212" }}
+>
+  <CoreInfo
+    label="Dia/Hora 🗓️"
+    value={formatarDias(core?.dias)}
+    loading={loading}
+    compact
+  />
+  <CoreInfo
+    label="Recrutando 🎯"
+    value={core?.precisaDe}
+    loading={loading}
+    compact
+  />
+  <CoreInfo
+    label="Luta Atual ⚔️"
+    value={core?.bossAtual}
+    loading={loading}
+    compact
+  />
+  <CoreInfo
+    label="Total de Players 👥"
+    value={`${totalPlayers}`}
+    loading={loading}
+    compact
+  />
+</div>
 
-      <section className="space-y-12 pt-10 flex-grow flex flex-col">
-        <CoreGrupo titulo="Tanks" cor="cyan" jogadores={grouped.tanks} loading={loading} icone="Tank-role.png" />
-        <CoreGrupo titulo="Healers" cor="violet" jogadores={grouped.healers} loading={loading} icone="Healer-role.png" />
-        <CoreGrupo
-          titulo="DPS Melee"
-          cor="pink"
-          jogadores={grouped.dps.filter((j) => isMelee(j.classe, j.spec))}
-          loading={loading}
-          icone="DPS-role.png"
-        />
-        <CoreGrupo
-          titulo="DPS Ranged"
-          cor="rose"
-          jogadores={grouped.dps.filter((j) => isRanged(j.classe, j.spec))}
-          loading={loading}
-          icone="DPS-role.png"
-        />
-      </section>
+<section className="space-y-12 pt-10 flex-grow flex flex-col">
+  <CoreGrupo
+    titulo="Tanks"
+    cor="cyan"
+    jogadores={grouped.tanks}
+    loading={loading}
+    icone="Tank-role.png"
+  />
+  <CoreGrupo
+    titulo="Healers"
+    cor="violet"
+    jogadores={grouped.healers}
+    loading={loading}
+    icone="Healer-role.png"
+  />
+  <CoreGrupo
+    titulo="DPS Melee"
+    cor="pink"
+    jogadores={grouped.dps.filter((j) => isMelee(j.classe, j.spec))}
+    loading={loading}
+    icone="DPS-role.png"
+  />
+  <CoreGrupo
+    titulo="DPS Ranged"
+    cor="rose"
+    jogadores={grouped.dps.filter((j) => isRanged(j.classe, j.spec))}
+    loading={loading}
+    icone="DPS-role.png"
+  />
+</section>
     </div>
   );
 }
