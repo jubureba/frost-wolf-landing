@@ -110,26 +110,32 @@ export default function Home() {
       <Header />
       <Filters />
 
-      <div className="flex justify-between items-center mb-4">
-        <div className="text-white font-semibold text-lg">Cores</div>
+      <div className="flex justify-between items-center mb-6">
+
         {(role === "ADMIN" || role === "RL") && (
-          <div className="flex gap-2">
-            <button
-              onClick={() => setModoReordenacao((prev) => !prev)}
-              className="bg-blue-600 text-white px-3 py-1 rounded"
-              disabled={loadingRemocao}
-            >
-              {modoReordenacao ? "Cancelar" : "Reordenar"}
-            </button>
+          <div className="flex gap-2 items-center">
             {modoReordenacao && (
               <button
                 onClick={handleSalvarOrdem}
-                className="bg-green-600 text-white px-3 py-1 rounded"
                 disabled={loadingRemocao}
+                className="rounded-xl border border-lime-500 text-lime-400 hover:bg-lime-500 hover:text-black px-4 py-2 text-sm font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Salvar Nova Ordem
+                Salvar Ordem
               </button>
             )}
+            <button
+              onClick={() => setModoReordenacao((prev) => !prev)}
+              disabled={loadingRemocao}
+              className={`rounded-xl border px-4 py-2 text-sm font-semibold transition 
+          ${
+            modoReordenacao
+              ? "border-red-500 text-red-400 hover:bg-red-500 hover:text-white"
+              : "border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-lime-400"
+          }
+        disabled:opacity-60 disabled:cursor-not-allowed`}
+            >
+              {modoReordenacao ? "Cancelar" : "Reordenar Cores"}
+            </button>
           </div>
         )}
       </div>

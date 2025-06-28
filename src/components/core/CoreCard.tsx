@@ -52,7 +52,7 @@ export function CoreCard({
             title="Arraste para reordenar"
           >
             <span className="text-lg leading-none">☰</span>
-            <span className="text-sm">Arraste para reordenar</span>
+            <span className="text-sm">Segure e Arraste</span>
           </div>
         )}
        <div className="flex items-center gap-2">
