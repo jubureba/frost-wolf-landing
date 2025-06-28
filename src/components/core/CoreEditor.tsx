@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import { Core, Player } from "../../lib/firestoreService";
-import { useToast } from "../ui/ToastContainer";
+import { useToast } from "../shared/ToastContainer";
 import { Pencil, Trash2, UserPlus, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "react-tooltip";
 import { Checkbox } from "../ui/Checkbox";
 import { InputField } from "../ui/InputField";
 import { DiasHorarioSelector } from "../ui/DiasHorarioSelector";
-import { CardSkeleton } from "../layout/CardSkeleton";
+import { CardSkeleton } from "../shared/CardSkeleton";
 
 export function CoreEditor({
   core,

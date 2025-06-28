@@ -5,7 +5,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { LoginGoogleButton } from "./ui/LoginGoogleButton";
 import { motion } from "framer-motion";
-import { useAuth } from "../context/AuthContext"; // ajuste o caminho se necessário
+import { useAuth } from "../context/AuthContext";
 
 export function UserStatus() {
   const { user, role, coreName, loading } = useAuth();

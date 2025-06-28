@@ -4,7 +4,7 @@ import { JogadorCard } from "./JogadorCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { CardSkeleton } from "../layout/CardSkeleton";
+import { CardSkeleton } from "../shared/CardSkeleton";
 
 export function CoreCard({
   core,
