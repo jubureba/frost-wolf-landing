@@ -56,7 +56,12 @@ export function CoreWithEditor({
 
   async function handleSalvarCore(coreAtualizado: Core) {
     try {
+      // Atualiza o core local (para nome, infos, dias etc.)
       setCore(coreAtualizado);
+
+      // 📌 Atualiza também a composição para o CoreCard renderizar na hora
+      setComposicao(coreAtualizado.composicaoAtual);
+
       await saveCore(coreAtualizado);
 
       const jogadoresAnteriores = new Set(
