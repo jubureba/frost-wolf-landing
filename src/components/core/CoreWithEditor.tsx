@@ -6,32 +6,7 @@ import { CoreCard } from "./CoreCard";
 import { CoreEditor } from "./CoreEditor";
 import { saveCore, Core } from "../../lib/firestoreService";
 import { logError } from "../../utils/logger";
-
-const CACHE_EXPIRATION_MS = 6 * 60 * 60 * 1000;
-
-type CharacterData = Record<string, unknown>;
-
-function getCachedCharacter(realm: string, name: string): CharacterData | null {
-  const key = `char-${realm.toLowerCase()}-${name.toLowerCase()}`;
-  const item = localStorage.getItem(key);
-  if (!item) return null;
-  try {
-    const { data, timestamp } = JSON.parse(item);
-    if (Date.now() - timestamp > CACHE_EXPIRATION_MS) {
-      localStorage.removeItem(key);
-      return null;
-    }
-    return data;
-  } catch {
-    localStorage.removeItem(key);
-    return null;
-  }
-}
-
-function setCachedCharacter(realm: string, name: string, data: CharacterData) {
-  const key = `char-${realm.toLowerCase()}-${name.toLowerCase()}`;
-  localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
-}
+import { useFetchComposicao } from "../../hooks/useFetchComposicao";
 
 export function CoreWithEditor({
   core: coreOriginal,
@@ -58,91 +33,31 @@ export function CoreWithEditor({
     (role === "ADMIN" || (role === "RL" && coreId === coreOriginal.id));
 
   const [core, setCore] = useState(coreOriginal);
-  const [composicao, setComposicao] = useState(coreOriginal.composicaoAtual);
-  const [loading, setLoading] = useState(true);
   const [jogadoresNovos, setJogadoresNovos] = useState<Set<string>>(new Set());
 
-  async function handleToggleEdit() {
-    if (isEditing) {
-      if (onFinishEdit) onFinishEdit();
-    } else {
-      if (onStartEdit) onStartEdit();
-    }
-  }
-
-  useEffect(() => {
-    console.log("Composição atualizada:", composicao);
-  }, [composicao]);
+  const { composicao, loading, setComposicao } = useFetchComposicao(
+    coreOriginal.composicaoAtual,
+    jogadoresNovos,
+    setJogadoresNovos
+  );
 
   useEffect(() => {
     setCore(coreOriginal);
     setComposicao(coreOriginal.composicaoAtual);
-  }, [coreOriginal]);
+  }, [coreOriginal, setComposicao]);
 
-  useEffect(() => {
-    fetchAndCache();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (jogadoresNovos.size > 0) {
-      fetchAndCache(true);
+  function handleToggleEdit() {
+    if (isEditing) {
+      onFinishEdit?.();
+    } else {
+      onStartEdit?.();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jogadoresNovos]);
-
-  async function fetchAndCache(ignoreCache = false) {
-    setLoading(true);
-
-    const composicaoAtualizada = await Promise.all(
-      composicao.map(async (jogador) => {
-        const chave = `${jogador.realm.toLowerCase()}-${jogador.nome.toLowerCase()}`;
-
-        if (!ignoreCache && !jogadoresNovos.has(chave)) {
-          const cached = getCachedCharacter(jogador.realm, jogador.nome);
-          if (cached) return { ...jogador, ...cached };
-        }
-
-        try {
-          const res = await fetch(
-            `/api/blizzard/character?realm=${encodeURIComponent(
-              jogador.realm
-            )}&name=${encodeURIComponent(jogador.nome)}`
-          );
-          if (!res.ok) return jogador;
-          const dados = await res.json();
-
-          setCachedCharacter(jogador.realm, jogador.nome, dados);
-
-          if (jogadoresNovos.has(chave)) {
-            setJogadoresNovos((prev) => {
-              const novoSet = new Set(prev);
-              novoSet.delete(chave);
-              return novoSet;
-            });
-          }
-
-          return { ...jogador, ...dados };
-        } catch {
-          return jogador;
-        }
-      })
-    );
-
-    setComposicao(composicaoAtualizada);
-    setLoading(false);
   }
 
   async function handleSalvarCore(coreAtualizado: Core) {
-    setLoading(true);
     try {
+      setCore(coreAtualizado);
       await saveCore(coreAtualizado);
-
-      setCore({
-        ...coreAtualizado,
-        composicaoAtual: [...coreAtualizado.composicaoAtual],
-      });
-      setComposicao([...coreAtualizado.composicaoAtual]);
 
       const jogadoresAnteriores = new Set(
         coreOriginal.composicaoAtual.map(
@@ -150,25 +65,21 @@ export function CoreWithEditor({
         )
       );
 
-      const jogadoresNovosSet = new Set<string>();
+      const novosSet = new Set<string>();
       coreAtualizado.composicaoAtual.forEach((p) => {
         const chave = `${p.realm.toLowerCase()}-${p.nome.toLowerCase()}`;
         if (!jogadoresAnteriores.has(chave)) {
-          jogadoresNovosSet.add(chave);
+          novosSet.add(chave);
         }
       });
 
-      setJogadoresNovos(jogadoresNovosSet);
+      setJogadoresNovos(novosSet);
     } catch (error) {
       logError(`Erro ao salvar core`, error);
-    } finally {
-      setLoading(false);
     }
   }
 
-  if (hideWhenEditing) {
-    return null;
-  }
+  if (hideWhenEditing) return null;
 
   return (
     <div className="flex flex-col gap-2">
