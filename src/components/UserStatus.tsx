@@ -6,6 +6,7 @@ import { auth } from "../lib/firebase";
 import { LoginGoogleButton } from "./ui/LoginGoogleButton";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
+import Image from 'next/image';
 
 export function UserStatus() {
   const { user, role, coreName, loading } = useAuth();
@@ -68,7 +69,7 @@ export function UserStatus() {
         }}
       >
         {user.photoURL ? (
-          <img
+          <Image
             src={user.photoURL}
             alt={user.displayName ?? "Avatar"}
             className="w-8 h-8 rounded-full object-cover border border-lime-500"
