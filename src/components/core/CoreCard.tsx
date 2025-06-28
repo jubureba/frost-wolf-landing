@@ -10,6 +10,9 @@ import { CoreGrupo } from "./CoreGrupo";
 import { CoreInfo } from "./CoreInfo";
 import { Pencil, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faInfoCircle, faCalendarAlt, faBullseye, faCrosshairs, faUsers } from '@fortawesome/free-solid-svg-icons';
+
 
 export function CoreCard({
   core,
@@ -102,65 +105,71 @@ export function CoreCard({
       </header>
 
       <div
-  className="grid grid-cols-2 gap-x-10 gap-y-6 text-sm text-gray-300 border border-neutral-700 pt-6 rounded-lg sticky top-0 z-10 p-4"
-  style={{ backgroundColor: "#121212" }}
->
+        className="grid grid-cols-2 gap-x-10 gap-y-6 text-sm text-gray-300 border border-neutral-700 pt-6 rounded-lg sticky top-0 z-10 p-4"
+        style={{ backgroundColor: "#121212" }}
+      >
+          <CoreInfo
+    label={<><FontAwesomeIcon icon={faInfoCircle} className="mr-1" /> Informações gerais</>}
+    value={core?.informacoes}
+    loading={loading}
+    compact
+  />
   <CoreInfo
-    label="Dia/Hora 🗓️"
+    label={<><FontAwesomeIcon icon={faCalendarAlt} className="mr-1" /> Dia/Hora</>}
     value={formatarDias(core?.dias)}
     loading={loading}
     compact
   />
   <CoreInfo
-    label="Recrutando 🎯"
+    label={<><FontAwesomeIcon icon={faBullseye} className="mr-1" /> Recrutando</>}
     value={core?.precisaDe}
     loading={loading}
     compact
   />
   <CoreInfo
-    label="Luta Atual ⚔️"
+    label={<><FontAwesomeIcon icon={faCrosshairs} className="mr-1" /> Luta Atual</>}
     value={core?.bossAtual}
     loading={loading}
     compact
   />
   <CoreInfo
-    label="Total de Players 👥"
+    label={<><FontAwesomeIcon icon={faUsers} className="mr-1" /> Total de Players</>}
     value={`${totalPlayers}`}
     loading={loading}
     compact
   />
-</div>
+      </div>
 
-<section className="space-y-12 pt-10 flex-grow flex flex-col">
-  <CoreGrupo
-    titulo="Tanks"
-    cor="cyan"
-    jogadores={grouped.tanks}
-    loading={loading}
-    icone="Tank-role.png"
-  />
-  <CoreGrupo
-    titulo="Healers"
-    cor="violet"
-    jogadores={grouped.healers}
-    loading={loading}
-    icone="Healer-role.png"
-  />
-  <CoreGrupo
-    titulo="DPS Melee"
-    cor="pink"
-    jogadores={grouped.dps.filter((j) => isMelee(j.classe, j.spec))}
-    loading={loading}
-    icone="DPS-role.png"
-  />
-  <CoreGrupo
-    titulo="DPS Ranged"
-    cor="rose"
-    jogadores={grouped.dps.filter((j) => isRanged(j.classe, j.spec))}
-    loading={loading}
-    icone="DPS-role.png"
-  />
-</section>
+      <section className="space-y-12 pt-10 flex-grow flex flex-col">
+        <CoreGrupo
+          titulo="Tanks"
+          cor="cyan"
+          jogadores={grouped.tanks}
+          loading={loading}
+          icone="Tank-role.png"
+        />
+        <CoreGrupo
+          titulo="Healers"
+          cor="violet"
+          jogadores={grouped.healers}
+          loading={loading}
+          icone="Healer-role.png"
+        />
+        <CoreGrupo
+          titulo="DPS Melee"
+          cor="pink"
+          jogadores={grouped.dps.filter((j) => isMelee(j.classe, j.spec))}
+          loading={loading}
+          icone="DPS-role.png"
+        />
+        <CoreGrupo
+          titulo="DPS Ranged"
+          cor="rose"
+          jogadores={grouped.dps.filter((j) => isRanged(j.classe, j.spec))}
+          loading={loading}
+          icone="DPS-role.png"
+        />
+      </section>
     </div>
   );
 }

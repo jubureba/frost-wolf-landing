@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "render.worldofwarcraft.com", port: "", pathname: "/**" },
       { protocol: "https", hostname: "wow.zamimg.com", port: "", pathname: "/images/wow/icons/large/**" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com", port: "", pathname: "/**" }, // Adicionado
     ],
   },
   env: {

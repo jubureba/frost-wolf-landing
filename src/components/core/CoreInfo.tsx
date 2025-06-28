@@ -4,7 +4,7 @@ export function CoreInfo({
   loading,
   compact,
 }: {
-  label: string;
+  label: React.ReactNode;
   value?: string;
   loading?: boolean;
   compact?: boolean;
