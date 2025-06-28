@@ -1,4 +1,3 @@
-// components/core/CoreGrupo.tsx
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { JogadorCard } from "./JogadorCard";
@@ -26,6 +25,12 @@ export function CoreGrupo({
 
   const corClasse = corMap[cor] ?? "text-gray-400";
 
+  const algumCarregando = jogadores.some(j => !j.avatar || !j.spec || !j.classe || !j.ilvl);
+  const loadingGeral = loading || algumCarregando;
+
+  const jogadoresCarregados = jogadores.filter(j => j.avatar && j.spec && j.classe && j.ilvl);
+  const jogadoresCarregando = jogadores.filter(j => !j.avatar || !j.spec || !j.classe || !j.ilvl);
+
   return (
     <div>
       <h3
@@ -42,7 +47,7 @@ export function CoreGrupo({
         )}
         {titulo}
 
-        {loading ? (
+        {loadingGeral ? (
           <div
             className="w-5 h-5 border-4 border-gray-600 border-t-transparent rounded-full animate-spin"
             style={{
@@ -57,7 +62,7 @@ export function CoreGrupo({
       </h3>
 
       <AnimatePresence mode="popLayout">
-        {!loading && jogadores.length > 0 ? (
+        {jogadores.length > 0 ? (
           <motion.ul
             layout
             initial={{ opacity: 0, y: 10 }}
@@ -65,15 +70,25 @@ export function CoreGrupo({
             exit={{ opacity: 0, y: 10 }}
             className="flex flex-wrap gap-6"
           >
-            {jogadores.map((j) => (
+            {jogadoresCarregados.map(j => (
               <JogadorCard
                 key={`${j.nome}-${j.realm}`}
                 jogador={j}
-                loading={!j.avatar || !j.spec || !j.classe || !j.ilvl}
+                loading={false}
+              />
+            ))}
+
+            {jogadoresCarregando.map((_, i) => (
+              <CardSkeleton
+                key={`skeleton-${i}`}
+                avatarSize={56}
+                lines={2}
+                widths={["80%", "50%"]}
+                className="rounded-lg"
               />
             ))}
           </motion.ul>
-        ) : loading ? (
+        ) : loadingGeral ? (
           <div className="flex flex-wrap gap-6 justify-center">
             {Array.from({ length: 6 }).map((_, i) => (
               <CardSkeleton
