@@ -42,6 +42,7 @@ export type Core = {
   bossAtual: string;
   linkRecrutamento?: string;
   composicaoAtual: Player[];
+  ordem?: number;
 };
 // FUNÇÕES DO USUARIO //
 // Cria ou atualiza o usuário no Firestore
@@ -92,14 +93,17 @@ export function sanitizePlayer(player: unknown): Player {
 export const getCores = async (): Promise<Core[]> => {
   const coresCollection = collection(db, "cores");
   const snapshot = await getDocs(coresCollection);
-  return snapshot.docs.map((doc) => {
-    const data = doc.data() as Omit<Core, "id">;
-    return {
-      id: doc.id,
-      ...data,
-      recrutando: data.recrutando ?? false,
-    };
-  });
+
+  return snapshot.docs
+    .map((doc) => {
+      const data = doc.data() as Omit<Core, "id">;
+      return {
+        id: doc.id,
+        ...data,
+        recrutando: data.recrutando ?? false,
+      };
+    })
+    .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
 };
 
 // 🔸 Atualizar dados de um core

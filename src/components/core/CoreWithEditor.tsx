@@ -39,12 +39,16 @@ export function CoreWithEditor({
   hideWhenEditing = false,
   onStartEdit,
   onFinishEdit,
+  modoReordenacao = false,
+  onRemoveClick,
 }: {
   core: Core;
   isEditing?: boolean;
   hideWhenEditing?: boolean;
   onStartEdit?: () => void;
   onFinishEdit?: () => void;
+  modoReordenacao?: boolean;
+  onRemoveClick?: () => void;
 }) {
   const { user, role, coreId, loading: authLoading } = useAuth();
 
@@ -180,6 +184,8 @@ export function CoreWithEditor({
             loading={loading}
             onEditClick={handleToggleEdit}
             showEditor={canEdit}
+            modoReordenacao={modoReordenacao}
+            onRemoveClick={onRemoveClick}
           />
           <CoreEditor
             core={{ ...core, composicaoAtual: composicao }}
@@ -199,6 +205,8 @@ export function CoreWithEditor({
           loading={loading}
           onEditClick={handleToggleEdit}
           showEditor={canEdit}
+          modoReordenacao={modoReordenacao}
+          onRemoveClick={onRemoveClick}
         />
       )}
     </div>

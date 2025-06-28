@@ -1,46 +1,25 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
 import { JogadorCard } from "./JogadorCard";
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil } from "lucide-react";
-
-export default function Dashboard() {
-  const [core, setCore] = useState<Core | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/core")
-      .then((res) => res.json())
-      .then((data) => {
-        setCore(data);
-        setLoading(false);
-      });
-  }, []);
-
-  return (
-    <div className="flex justify-center items-center min-h-[500px] px-4">
-      {core || loading ? (
-        <CoreCard core={core} loading={loading} />
-      ) : (
-        <div className="text-gray-400 text-lg font-medium">
-          Core não encontrado.
-        </div>
-      )}
-    </div>
-  );
-}
+import { Pencil, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { CardSkeleton } from "../layout/CardSkeleton";
 
 export function CoreCard({
   core,
   loading,
   onEditClick,
+  onRemoveClick,
   showEditor,
+  modoReordenacao = false,
 }: {
   core: Core | null;
   loading: boolean;
   onEditClick?: () => void;
+  onRemoveClick?: (coreId: string) => void;
   showEditor?: boolean;
+  modoReordenacao?: boolean;
 }) {
   const grouped = agruparPorRole(core?.composicaoAtual ?? []);
   const totalPlayers = core?.composicaoAtual.length ?? 0;
@@ -53,7 +32,7 @@ export function CoreCard({
     if (!dias) return "Nenhum dia selecionado";
 
     const { diasSelecionados, horaInicio, horaFim } = dias;
-    if (!diasSelecionados == null || !horaInicio || !horaFim)
+    if (!diasSelecionados || !horaInicio || !horaFim)
       return "Nenhum dia selecionado";
 
     return `${diasSelecionados.join(", ")} das ${horaInicio} às ${horaFim}`;
@@ -61,46 +40,75 @@ export function CoreCard({
 
   return (
     <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 sm:p-10 shadow-xl text-white font-nunito w-full flex flex-col">
-      <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 mb-8">
-        <div className="flex flex-col max-w-xl">
-          {loading ? (
-            <div className="h-10 w-56 shimmer rounded" />
-          ) : (
-            <>
-              <h2 className="text-4xl font-extrabold text-lime-400 leading-tight font-saira">
-                {core?.nome}
-              </h2>
-
-              {showEditor && onEditClick && (
-                <button
-                  onClick={onEditClick}
-                  aria-label="Editar Core"
-                  className="mt-1 flex items-center gap-1 text-gray-400 hover:text-lime-600 font-saira text-sm transition-colors px-1 py-0 leading-none"
-                  type="button"
-                >
-                  <span>Editar Core</span>
-                  <Pencil size={8} />
-                </button>
-              )}
-            </>
-          )}
-        </div>
-
-        {!loading && core?.recrutando && core?.linkRecrutamento && (
-          <motion.a
-            href={core.linkRecrutamento}
-            target="_blank"
-            rel="noopener noreferrer"
-            whileHover={{ scale: 1.05, boxShadow: "0 0 12px rgb(163 230 53)" }}
-            whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center gap-2 rounded-lg border border-lime-500 px-5 py-3 text-lime-400 hover:bg-lime-500 hover:text-neutral-900 transition-colors duration-200 text-base font-semibold shadow-sm select-none"
+      <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8 relative">
+  <div className="flex flex-col max-w-xl flex-grow">
+    {loading ? (
+      <div className="h-10 w-56 shimmer rounded" />
+    ) : (
+      <>
+        {modoReordenacao && (
+          <div
+            className="drag-handle cursor-move flex items-center gap-1 text-gray-400 select-none mr-4"
+            title="Arraste para reordenar"
           >
-            📝Quero me candidatar
-          </motion.a>
+            <span className="text-lg leading-none">☰</span>
+            <span className="text-sm">Arraste para reordenar</span>
+          </div>
         )}
-      </header>
+       <div className="flex items-center gap-2">
+  <h2 className="text-4xl font-extrabold text-lime-400 leading-tight font-saira">
+    {core?.nome}
+  </h2>
 
-      <div className="flex flex-wrap gap-10 text-sm text-gray-300 border-t border-neutral-800 pt-6 ">
+  {showEditor && onRemoveClick && core?.id && (
+    <div className="group relative">
+      <button
+        onClick={() => onRemoveClick(core.id)}
+        aria-label="Remover Core"
+        className="text-red-500 hover:text-red-700 p-1 rounded-md transition-colors"
+        type="button"
+      >
+        <Trash2 size={18} />
+      </button>
+      <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 text-xs bg-neutral-800 text-white px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+        Remover Core
+      </div>
+    </div>
+  )}
+</div>
+        {showEditor && onEditClick && (
+          <button
+            onClick={onEditClick}
+            aria-label="Editar Core"
+            className="mt-1 flex items-center gap-1 text-gray-400 hover:text-lime-600 font-saira text-sm transition-colors px-1 py-0 leading-none"
+            type="button"
+          >
+            <span>Editar Core</span>
+            <Pencil size={8} />
+          </button>
+        )}
+      </>
+    )}
+  </div>
+
+  <div className="flex flex-col items-end gap-2">
+    {!loading && core?.recrutando && core?.linkRecrutamento && (
+      <motion.a
+        href={core.linkRecrutamento}
+        target="_blank"
+        rel="noopener noreferrer"
+        whileHover={{ scale: 1.05, boxShadow: "0 0 12px rgb(163 230 53)" }}
+        whileTap={{ scale: 0.95 }}
+        className="inline-flex items-center gap-2 rounded-lg border border-lime-500 px-5 py-3 text-lime-400 hover:bg-lime-500 hover:text-neutral-900 transition-colors duration-200 text-base font-semibold shadow-sm select-none"
+      >
+        📝 Quero me candidatar
+      </motion.a>
+    )}
+
+  </div>
+</header>
+
+      <div className="flex flex-wrap gap-10 text-sm text-gray-300 border-t border-neutral-800 pt-6">
         <Info
           label="🗓️ Dia/Hora"
           value={formatarDias(core?.dias)}
@@ -175,7 +183,7 @@ function Info({
   return (
     <div className={`flex flex-col ${compact ? "min-w-[140px]" : "gap-1"}`}>
       <span
-        className={`font-semibold text-lime-400  select-none font-saira ${
+        className={`font-semibold text-lime-400 select-none font-saira ${
           compact ? "text-sm" : ""
         }`}
       >
@@ -240,21 +248,18 @@ function isRanged(classe?: string | null, spec?: string | null) {
   );
 }
 
-import { CardSkeleton } from "../layout/CardSkeleton";
-import Image from "next/image";
-
 function Grupo({
   titulo,
   cor,
   jogadores,
   loading,
-  icone, // nova prop
+  icone,
 }: {
   titulo: string;
   cor: string;
   jogadores: Jogador[];
   loading?: boolean;
-  icone?: string; // opcional
+  icone?: string;
 }) {
   const corMap: Record<string, string> = {
     cyan: "text-cyan-400",
@@ -284,7 +289,9 @@ function Grupo({
         {loading ? (
           <div
             className="w-5 h-5 border-4 border-gray-600 border-t-transparent rounded-full animate-spin"
-            style={{ borderTopColor: corClasse.split("-")[1] || "#38bdf8" }}
+            style={{
+              borderTopColor: corClasse.split("-")[1] || "#38bdf8",
+            }}
             role="status"
             aria-label="Carregando"
           />

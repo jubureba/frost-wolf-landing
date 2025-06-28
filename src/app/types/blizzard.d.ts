@@ -82,5 +82,6 @@ type Core = {
   bossAtual: string;
   linkRecrutamento?: string;
   composicaoAtual: Jogador[];
+  ordem?: number;
 };
 
