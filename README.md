@@ -1,7 +1,8 @@
-# ❄️ Frost Wolf Landing
+# ❄️ Frost Wolf Landing ![Versão](https://img.shields.io/badge/version-0.5.15-orange)
 
 ![Node.js](https://img.shields.io/badge/node-22.x-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
+
 
 Landing page interativa e responsiva criada para **estruturar visualmente os cores da guilda Frost Wolf no World of Warcraft** e também **gerenciar candidaturas de novos membros**.
 
