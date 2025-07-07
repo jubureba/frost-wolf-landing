@@ -3,6 +3,7 @@
 ![Node.js](https://img.shields.io/badge/node-22.x-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 
+> 👥 Quer contribuir? Veja o nosso [Guia de Contribuição](CONTRIBUTING.md)
 
 Landing page interativa e responsiva criada para **estruturar visualmente os cores da guilda Frost Wolf no World of Warcraft** e também **gerenciar candidaturas de novos membros**.
 
