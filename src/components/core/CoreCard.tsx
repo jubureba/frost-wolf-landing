@@ -29,8 +29,17 @@ export function CoreCard({
   showEditor?: boolean;
   modoReordenacao?: boolean;
 }) {
-  const grouped = agruparPorRole(core?.composicaoAtual ?? []);
-  const totalPlayers = core?.composicaoAtual.length ?? 0;
+  const jogadores = core?.composicaoAtual ?? [];
+    const algumJogadorIncompleto = jogadores.some(
+    (j) => !j.avatar || !j.classe || !j.spec || !j.ilvl
+  );
+
+  const loadingReal = loading || algumJogadorIncompleto;
+
+  const grouped = agruparPorRole(jogadores);
+  const totalPlayers = jogadores.length;
+  //const grouped = agruparPorRole(core?.composicaoAtual ?? []);
+  //const totalPlayers = core?.composicaoAtual.length ?? 0;
 
   return (
     <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 sm:p-10 shadow-xl text-white font-nunito w-full flex flex-col">
@@ -105,7 +114,7 @@ export function CoreCard({
       </header>
 
       <div
-        className="grid grid-cols-2 gap-x-10 gap-y-6 text-sm text-gray-300 border border-neutral-700 pt-6 rounded-lg sticky top-0 z-10 p-4"
+        className="grid grid-cols-2 gap-x-10 gap-y-6 text-sm text-gray-300 border border-neutral-700 pt-6 rounded-lg p-4" //fixo sticky top-0 z-10
         style={{ backgroundColor: "#121212" }}
       >
           <CoreInfo
@@ -145,28 +154,28 @@ export function CoreCard({
           titulo="Tanks"
           cor="cyan"
           jogadores={grouped.tanks}
-          loading={loading}
+          loading={loadingReal}
           icone="Tank-role.png"
         />
         <CoreGrupo
           titulo="Healers"
           cor="violet"
           jogadores={grouped.healers}
-          loading={loading}
+          loading={loadingReal}
           icone="Healer-role.png"
         />
         <CoreGrupo
           titulo="DPS Melee"
           cor="pink"
           jogadores={grouped.dps.filter((j) => isMelee(j.classe, j.spec))}
-          loading={loading}
+          loading={loadingReal}
           icone="DPS-role.png"
         />
         <CoreGrupo
           titulo="DPS Ranged"
           cor="rose"
           jogadores={grouped.dps.filter((j) => isRanged(j.classe, j.spec))}
-          loading={loading}
+          loading={loadingReal}
           icone="DPS-role.png"
         />
       </section>

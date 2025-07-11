@@ -5,7 +5,7 @@ export function Filters() {
         Cores
       </button>
       <button className="pb-2 text-gray-400 hover:text-lime-400 hover:border-b-2 hover:border-lime-500 transition-colors duration-200">
-        ...
+        .
       </button>
     </div>
   );
