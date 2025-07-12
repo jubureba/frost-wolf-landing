@@ -3,41 +3,39 @@ import { BlizzardHttpClient } from "@/lib/BlizzardHttpClient";
 import { BlizzardApi } from "@/lib/blizzardApi";
 import { BlizzardApiError } from "@/utils/BlizzardApiError";
 
+/* -------------------------------------------------------------------------- */
+/*  Instâncias singletons fora do handler                                     */
+/* -------------------------------------------------------------------------- */
 const client = new BlizzardHttpClient(
   process.env.BLIZZARD_CLIENT_ID!,
   process.env.BLIZZARD_CLIENT_SECRET!,
   "us"
 );
-
 const api = new BlizzardApi(client);
 
+/* -------------------------------------------------------------------------- */
+/*  GET /api/character?realm=nemesis&name=Thrall                               */
+/* -------------------------------------------------------------------------- */
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const realm = searchParams.get("realm");
-  const name = searchParams.get("name");
+  const name  = searchParams.get("name");
 
   if (!realm || !name) {
     return NextResponse.json(
-      { error: "Missing parameters: realm and name are required" },
+      { error: "Parâmetros 'realm' e 'name' são obrigatórios." },
       { status: 400 }
     );
   }
 
   try {
     const dados = await api.getCompleteCharacterData(realm, name);
-    return NextResponse.json(dados);
-  } catch (error: unknown) {
-    if (error instanceof BlizzardApiError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.status }
-      );
+    return NextResponse.json(dados, { status: 200 });
+  } catch (err) {
+    if (err instanceof BlizzardApiError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
     }
-
-    console.error("Erro inesperado:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    console.error(err);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

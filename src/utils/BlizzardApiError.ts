@@ -1,5 +1,5 @@
 export class BlizzardApiError extends Error {
-  constructor(message: string, public status: number) {
+  constructor(public override message: string, public status = 500) {
     super(message);
     this.name = "BlizzardApiError";
   }

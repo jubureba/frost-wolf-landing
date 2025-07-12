@@ -1,105 +1,93 @@
-import { BlizzardApiError } from "@/utils/BlizzardApiError";
 import axios, { AxiosRequestConfig } from "axios";
-import { Redis } from "@upstash/redis";
+import { redis } from "./redis";
+import { BlizzardApiError } from "@/utils/BlizzardApiError";
 
 export class BlizzardHttpClient {
-  private token: string | null = null;
-  private tokenExpiration: number = 0;
-  private redis: Redis;
-
   constructor(
-    private clientId: string,
-    private clientSecret: string,
+    private readonly clientId: string,
+    private readonly clientSecret: string,
     public readonly region: string = "us"
-  ) {
-    this.redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL!,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-    });
-  }
+  ) {}
 
+  /* -------------------------------------------------------------------------- */
+  /*  OAuth – token com cache Upstash                                            */
+  /* -------------------------------------------------------------------------- */
   private async authenticate(): Promise<string> {
-    const now = Date.now();
-    if (this.token && now < this.tokenExpiration) return this.token;
+    const fromCache = await redis.get<string>("blizzard:token");
+    if (fromCache) return fromCache; // token ainda válido
 
-    const res = await axios.post(
+    const { data } = await axios.post(
       `https://${this.region}.battle.net/oauth/token`,
       "grant_type=client_credentials",
-      {
-        auth: {
-          username: this.clientId,
-          password: this.clientSecret,
-        },
-      }
+      { auth: { username: this.clientId, password: this.clientSecret } }
     );
 
-    this.token = res.data.access_token;
-    this.tokenExpiration = now + res.data.expires_in * 1000 - 60000;
+    // Salva no Redis com TTL (–60 s de folga)
+    const ttl = data.expires_in - 60;
+    await redis.set("blizzard:token", data.access_token, { ex: ttl });
 
-    // Cache do token (opcional)
-    await this.redis.set("blizzard_token", this.token, {
-      ex: res.data.expires_in - 60, // buffer de segurança
-    });
-
-    return this.token ?? "";
+    return data.access_token;
   }
 
-  private sleep(ms: number) {
-    return new Promise((res) => setTimeout(res, ms));
-  }
-
-  async requestWithRetry<T, P extends Record<string, unknown>>(
+  /* -------------------------------------------------------------------------- */
+  /*  Retry simples p/ erros transitórios                                        */
+  /* -------------------------------------------------------------------------- */
+  private async requestWithRetry<T, P extends Record<string, unknown>>(
     url: string,
-    params?: P,
-    config?: AxiosRequestConfig,
-    retries = 3
+    params: P,
+    config: AxiosRequestConfig | undefined,
+    retries = 2
   ): Promise<T> {
     const token = await this.authenticate();
 
-    for (let i = 0; i <= retries; i++) {
+    for (let i = 0; ; i++) {
       try {
-        const response = await axios.get<T>(url, {
+        const { data } = await axios.get<T>(url, {
           ...config,
           headers: {
             Authorization: `Bearer ${token}`,
-            ...(config?.headers || {}),
+            ...(config?.headers ?? {}),
           },
-          params: {
-            locale: "pt_BR",
-            ...(params || {}),
-          },
+          params: { locale: "pt_BR", ...params },
         });
+        return data;
+      } catch (err) {
+        const status = axios.isAxiosError(err) ? err.response?.status ?? 500 : 500;
 
-        return response.data;
-      } catch (error: unknown) {
-        if (axios.isAxiosError(error)) {
-          const status = error.response?.status ?? 500;
-          const message = error.response?.data?.detail || error.message;
-          throw new BlizzardApiError(message, status);
+        // 429 / 5xx → tenta novamente
+        if (i < retries && [429, 500, 502, 503, 504].includes(status)) {
+          await new Promise((r) => setTimeout(r, 250 * (i + 1)));
+          continue;
         }
 
-        throw new BlizzardApiError("Erro inesperado", 500);
+        const msg =
+          axios.isAxiosError(err)
+            ? err.response?.data?.detail || err.message
+            : "Erro inesperado";
+        throw new BlizzardApiError(msg, status);
       }
     }
-
-    throw new BlizzardApiError("Falha após múltiplas tentativas", 429);
   }
 
+  /* -------------------------------------------------------------------------- */
+  /*  GET com cache por URL + params                                             */
+  /* -------------------------------------------------------------------------- */
   async get<T>(
     url: string,
-    params?: Record<string, string | number | boolean | undefined>,
+    params: Record<string, string | number | boolean | undefined> = {},
     config?: AxiosRequestConfig
   ): Promise<T> {
-    const cacheKey = `blizzard:${url}:${JSON.stringify(params)}`;
-    const cached = await this.redis.get<T>(cacheKey);
+    const key = `blizzard:res:${url}:${JSON.stringify(params)}`;
+    const cached = await redis.get<T>(key);
+    if (cached) return cached;
 
+    const data = await this.requestWithRetry<T, typeof params>(url, params, config);
 
-    if (cached) {
-      return cached;
-    }
-
-    const data = await this.requestWithRetry<T, Record<string, string | number | boolean | undefined>>(url, params, config);
-    await this.redis.set(cacheKey, data, { ex: 300 }); // TTL: 5 minutos
+    /* TTL adaptativo:
+       - endpoints "static-*" mudam raramente → 24 h
+       - demais → 5 min                                                 */
+    const isStatic = String(params.namespace).startsWith("static-");
+    await redis.set(key, data, { ex: isStatic ? 86400 : 300 });
 
     return data;
   }
