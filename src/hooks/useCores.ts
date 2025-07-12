@@ -82,5 +82,6 @@ export function useCores() {
     loadingRemocao,
     user,
     canEdit: role === "ADMIN" || role === "RL",
+    canEditAll: role === "ADMIN",
   };
 }

@@ -7,7 +7,7 @@ interface Props {
   editingCoreId: string | null;
   onStartEdit: (id: string) => void;
   onFinishEdit: () => void;
-  onRemoveClick: (id: string) => void;
+  onRemoveClick?: (id: string) => void;
   modoReordenacao: boolean;
 }
 
@@ -33,7 +33,7 @@ export function CoreGrid({
             hideWhenEditing={editingCoreId !== null && editingCoreId !== core.id}
             onStartEdit={() => onStartEdit(core.id)}
             onFinishEdit={onFinishEdit}
-            onRemoveClick={() => onRemoveClick(core.id)}
+            onRemoveClick={() => onRemoveClick?.(core.id)}
             modoReordenacao={modoReordenacao}
           />
         </div>

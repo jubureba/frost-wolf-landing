@@ -76,6 +76,7 @@ export function UserStatus() {
             height={32}
             className="w-8 h-8 rounded-full object-cover border border-lime-500"
             style={{ boxShadow: "0 0 6px rgb(163 230 53)" }}
+            unoptimized
           />
         ) : (
           <div

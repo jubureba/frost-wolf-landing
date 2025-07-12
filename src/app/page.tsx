@@ -25,6 +25,7 @@ export default function HomePage() {
     loadingRemocao,
     canEdit,
     user,
+    canEditAll,
   } = useCores();
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -34,7 +35,7 @@ export default function HomePage() {
     <main className="min-h-screen bg-[#121212] p-4 sm:p-6 flex flex-col">
       <Header />
       <Filters />
-      {canEdit && (
+      {canEditAll && (
         <CoreActions
           modoReordenacao={modoReordenacao}
           setModoReordenacao={setModoReordenacao}
@@ -48,10 +49,10 @@ export default function HomePage() {
         editingCoreId={editingCoreId}
         onStartEdit={handleStartEdit}
         onFinishEdit={() => setEditingCoreId(null)}
-        onRemoveClick={removerCore}
+        onRemoveClick={canEditAll ? removerCore : undefined}
         modoReordenacao={modoReordenacao}
       />
-      {!modoReordenacao && user && canEdit && (
+      {!modoReordenacao && user && canEditAll && (
         <FloatingButton action={handleNovoCore} disabled={loadingRemocao}>
           +
         </FloatingButton>

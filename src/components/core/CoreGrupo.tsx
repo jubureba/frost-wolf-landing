@@ -43,6 +43,7 @@ export function CoreGrupo({
             width={24}
             height={24}
             className="object-contain"
+            unoptimized
           />
         )}
         {titulo}

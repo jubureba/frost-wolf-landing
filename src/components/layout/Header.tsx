@@ -10,6 +10,7 @@ export function Header() {
           alt="Logo Frost Wolf"
           width={52}
           height={52}
+          unoptimized
         />
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-white drop-shadow-[0_0_6px_#84cc16]">

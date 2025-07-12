@@ -53,6 +53,7 @@ export function JogadorCard({ jogador, loading = false }: { jogador: Jogador; lo
                       width={56}
                       height={56}
                       className="object-cover w-full h-full"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-[#666] text-xl font-bold">
@@ -143,6 +144,7 @@ function JogadorPopoverContent({
                 width={28}
                 height={28}
                 className="rounded-full"
+                unoptimized
               />
             </div>
           )}
@@ -207,7 +209,7 @@ function JogadorPopoverContent({
               className="p-2 rounded-lg bg-[#2a2a2a] hover:bg-[#333] hover:shadow-[0_0_10px_#84cc16aa] transition cursor-pointer"
               aria-label={link.label}
             >
-              <Image src={link.img} alt={link.label} width={20} height={20} />
+              <Image src={link.img} alt={link.label} width={20} height={20} unoptimized/>
             </a>
             <span className="text-[10px] text-gray-400">{link.label}</span>
           </div>
@@ -240,7 +242,7 @@ const ContactInfo = memo(
   }) => {
     const content = (
       <>
-        <Image src={icon} alt="icon" width={16} height={16} className="flex-shrink-0" />
+        <Image src={icon} alt="icon" width={16} height={16} className="flex-shrink-0" unoptimized/>
         <span className="truncate">{text}</span>
       </>
     );
