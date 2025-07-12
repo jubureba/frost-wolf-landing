@@ -23,7 +23,6 @@ export default function HomePage() {
     handleStartEdit,
     handleNovoCore,
     loadingRemocao,
-    canEdit,
     user,
     canEditAll,
   } = useCores();
