@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { BlizzardHttpClient } from "@/lib/BlizzardHttpClient";
 import { BlizzardApi } from "@/lib/blizzardApi";
+import { BlizzardApiError } from "@/utils/BlizzardApiError";
+
+// Desative cache estático do Vercel para sempre trazer dados frescos
+export const dynamic = "force-dynamic";
 
 const client = new BlizzardHttpClient(
   process.env.BLIZZARD_CLIENT_ID!,
@@ -23,12 +27,22 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    console.log("🔍 Buscando personagem:", realm, name);
     const dados = await api.getCompleteCharacterData(realm, name);
-    console.log("✅ Dados recebidos:", dados);
     return NextResponse.json(dados);
-  } catch (error) {
-    console.error("❌ Erro ao buscar dados da Blizzard:", error);
-    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+  } catch (error: unknown) {
+    // Se foi erro customizado da Blizzard, use o status correto
+    if (error instanceof BlizzardApiError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status }
+      );
+    }
+
+    // Fallback genérico
+    console.error("Erro inesperado:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
