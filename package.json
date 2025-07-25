@@ -1,6 +1,6 @@
 {
   "name": "frost-wolf-landing",
-  "version": "0.5.17",
+  "version": "0.5.18",
   "private": true,
   "scripts": {
     "dev": "next dev",
