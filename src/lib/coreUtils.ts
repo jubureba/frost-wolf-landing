@@ -1,7 +1,7 @@
 export function agruparPorRole(jogadores: Jogador[]) {
   return jogadores.reduce(
     (acc, jogador) => {
-      const role = (jogador.role ?? "").toLowerCase();
+      const role = (jogador.funcao ?? "").toLowerCase();
       if (role === "tank") acc.tanks.push(jogador);
       else if (role === "healer") acc.healers.push(jogador);
       else acc.dps.push(jogador);
