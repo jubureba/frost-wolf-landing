@@ -380,13 +380,12 @@ export function CoreEditor({
       const specsDaClasse = classesSpecs[dados.classe] || [];
       setEspecializacoesDisponiveis(specsDaClasse);
 
-      // Supondo que o nome da especialização esteja em dados.specialization (exemplo: "Fúria")
       const nomeEspecializacao = Array.isArray(dados.especializacao)
-        ? dados.especializacao[0]
-        : dados.especializacao || "";
+        ? dados.especializacao[0]?.name ?? ""
+        : dados.especializacao ?? "";
 
       const specEncontrada = specsDaClasse.find(
-        (s) => s.name.toLowerCase() === nomeEspecializacao.name.toLowerCase()
+        (s) => s.name.toLowerCase() === nomeEspecializacao.toLowerCase()
       );
 
       setNovoEspecializacao(specEncontrada ? specEncontrada.id : "");
@@ -395,15 +394,36 @@ export function CoreEditor({
       console.error("Erro ao buscar personagem:", err);
       alert("Não foi possível carregar dados do personagem.");
     }
-  };
+  };useEffect(() => {
+  const specsDaClasse = classesSpecs[novoClasse] || [];
+  setEspecializacoesDisponiveis(specsDaClasse);
+
+  if (specsDaClasse.length === 0) {
+    setNovoEspecializacao("");
+    setNovoFuncao("");
+    return;
+  }
+
+  setNovoEspecializacao((atual) => {
+    // Se o valor atual existe na lista, mantém ele
+    if (atual && specsDaClasse.some(s => s.id === atual)) {
+      const specAtual = specsDaClasse.find(s => s.id === atual)!;
+      setNovoFuncao(specAtual.role);
+      return atual;
+    }
+    // Senão, seta a primeira especialização válida
+    setNovoFuncao(specsDaClasse[0].role);
+    return specsDaClasse[0].id;
+  });
+}, [novoClasse]);
 
   const handleEspecializacaoChange = (id: string) => {
-    const spec = especializacoesDisponiveis.find((s) => s.id === id);
-    if (spec) {
-      setNovoEspecializacao(spec.name); // salva o nome, não o id
-      setNovoFuncao(spec.role);
-    }
-  };
+  const spec = especializacoesDisponiveis.find((s) => s.id === id);
+  if (spec) {
+    setNovoEspecializacao(spec.id); // guarda o id para controle do select
+    setNovoFuncao(spec.role);
+  }
+};
 
   function limparCampos() {
     setNovoNome("");
@@ -418,17 +438,21 @@ export function CoreEditor({
     setEditIndex(null);
   }
 
-  const player: Player = {
-    nome: novoNome.trim(),
-    realm: novoRealm.trim(),
-    discord: novoDiscord.trim() || undefined,
-    battletag: novoBattletag.trim() || undefined,
-    twitch: novoTwitch.trim() || undefined,
-    classe: novoClasse.trim() || undefined,
-    especializacao: novoEspecializacao.trim() || undefined,
-    especializacoesDisponiveis: especializacoesDisponiveis,
-    funcao: novoFuncao.trim() || undefined,
-  };
+  const specSelecionada = especializacoesDisponiveis.find(
+  (s) => s.id === novoEspecializacao
+);
+
+const player: Player = {
+  nome: novoNome.trim(),
+  realm: novoRealm.trim(),
+  discord: novoDiscord.trim() || undefined,
+  battletag: novoBattletag.trim() || undefined,
+  twitch: novoTwitch.trim() || undefined,
+  classe: novoClasse.trim() || undefined,
+  especializacao: specSelecionada ? specSelecionada.name : undefined,
+  especializacoesDisponiveis: especializacoesDisponiveis,
+  funcao: novoFuncao.trim() || undefined,
+};
 
   function editarJogador(index: number) {
     const player = composicao[index];
