@@ -16,6 +16,9 @@ export function CoreGrupo({
   loading?: boolean;
   icone?: string;
 }) {
+  // Logs para debug
+  console.log(`CoreGrupo "${titulo}" recebeu jogadores:`, jogadores);
+
   const corMap: Record<string, string> = {
     cyan: "text-cyan-400",
     violet: "text-violet-400",
@@ -25,11 +28,18 @@ export function CoreGrupo({
 
   const corClasse = corMap[cor] ?? "text-gray-400";
 
-  const algumCarregando = jogadores.some(j => !j.avatar || !j.spec || !j.classe || !j.ilvl);
-  const loadingGeral = loading || algumCarregando;
-
-  const jogadoresCarregados = jogadores.filter(j => j.avatar && j.spec && j.classe && j.ilvl);
-  const jogadoresCarregando = jogadores.filter(j => !j.avatar || !j.spec || !j.classe || !j.ilvl);
+  const algumCarregando = jogadores.some(
+    (j) => !j.avatar || !j.especializacao || !j.classe || !j.ilvl
+  );
+  const jogadoresCarregados = jogadores.filter(
+    (j) => j.avatar && j.especializacao && j.classe && j.ilvl
+  );
+  const jogadoresCarregando = jogadores.filter(
+    (j) => !j.avatar || !j.especializacao || !j.classe || !j.ilvl
+  );
+  const jogadoresComTimeout =
+    jogadores.length > 0 && jogadoresCarregando.length === jogadores.length;
+  const loadingGeral = loading || (algumCarregando && !jogadoresComTimeout);
 
   return (
     <div>
@@ -47,7 +57,6 @@ export function CoreGrupo({
           />
         )}
         {titulo}
-
         {loadingGeral ? (
           <div
             className="w-5 h-5 border-4 border-gray-600 border-t-transparent rounded-full animate-spin"
@@ -71,7 +80,7 @@ export function CoreGrupo({
             exit={{ opacity: 0, y: 10 }}
             className="flex flex-wrap gap-6"
           >
-            {jogadoresCarregados.map(j => (
+            {jogadoresCarregados.map((j) => (
               <JogadorCard
                 key={`${j.nome}-${j.realm}`}
                 jogador={j}

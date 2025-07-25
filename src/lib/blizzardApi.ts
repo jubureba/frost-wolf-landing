@@ -2,164 +2,161 @@ import { BlizzardHttpClient } from "./BlizzardHttpClient";
 import { logInfo, logError } from "../utils/logger";
 
 export class BlizzardApi {
-  private specRoleCache = new Map<string, "tank" | "healer" | "dps">();
+  private cacheFuncaoPorSpec = new Map<string, "tank" | "healer" | "dps">();
 
-  constructor(private client: BlizzardHttpClient) {}
+  constructor(private cliente: BlizzardHttpClient) {}
 
-  async getCharacterProfile(realm: string, name: string) {
+  async obterPerfilPersonagem(reino: string, nome: string) {
     const url = `https://${
-      this.client.region
-    }.api.blizzard.com/profile/wow/character/${realm.toLowerCase()}/${name.toLowerCase()}`;
-    logInfo(`🔍 Buscando perfil: ${name} - ${realm}`, { url });
+      this.cliente.region
+    }.api.blizzard.com/profile/wow/character/${reino.toLowerCase()}/${nome.toLowerCase()}`;
+    logInfo(`🔍 Buscando perfil: ${nome} - ${reino}`, { url });
 
-    const res = await this.client.get<CharacterProfileResponse>(url, {
-      namespace: `profile-${this.client.region}`,
+    const res = await this.cliente.get<CharacterProfileResponse>(url, {
+      namespace: `profile-${this.cliente.region}`,
     });
 
-    logInfo(`✅ Perfil encontrado: ${name} - ${realm}`, res);
+    logInfo(`✅ Perfil encontrado: ${nome} - ${reino}`, res);
     return res;
   }
 
-  async getCharacterAvatar(realm: string, name: string) {
+  async obterAvatarPersonagem(reino: string, nome: string) {
     const url = `https://${
-      this.client.region
-    }.api.blizzard.com/profile/wow/character/${realm.toLowerCase()}/${name.toLowerCase()}/character-media`;
-    logInfo(`🔍 Buscando avatar: ${name} - ${realm}`, { url });
+      this.cliente.region
+    }.api.blizzard.com/profile/wow/character/${reino.toLowerCase()}/${nome.toLowerCase()}/character-media`;
+    logInfo(`🔍 Buscando avatar: ${nome} - ${reino}`, { url });
 
-    const res = await this.client.get<CharacterMediaResponse>(url, {
-      namespace: `profile-${this.client.region}`,
+    const res = await this.cliente.get<CharacterMediaResponse>(url, {
+      namespace: `profile-${this.cliente.region}`,
     });
 
     const avatar = res.assets?.find((a) => a.key === "avatar")?.value ?? null;
 
-    logInfo(`🎨 Avatar encontrado: ${name} - ${realm}`, { avatar });
+    logInfo(`🎨 Avatar encontrado: ${nome} - ${reino}`, { avatar });
     return avatar;
   }
 
-  async getClassData(classId: number) {
-    const url = `https://${this.client.region}.api.blizzard.com/data/wow/playable-class/${classId}`;
-    logInfo(`🔍 Buscando dados da classe ID ${classId}`, { url });
+  async obterClassePorId(idClasse: number) {
+    const url = `https://${this.cliente.region}.api.blizzard.com/data/wow/playable-class/${idClasse}`;
+    logInfo(`🔍 Buscando dados da classe ID ${idClasse}`, { url });
 
-    const res = await this.client.get<ClassDataResponse>(url, {
-      namespace: `static-${this.client.region}`,
+    const res = await this.cliente.get<ClassDataResponse>(url, {
+      namespace: `static-${this.cliente.region}`,
     });
 
-    const icon = res.media?.assets?.find((a) => a.key === "icon")?.value ?? "";
-    const color = this.getClassColor(res.name);
+    const icone = res.media?.assets?.find((a) => a.key === "icon")?.value ?? "";
+    const cor = this.obterCorClasse(res.name);
 
-    logInfo(`🎯 Classe encontrada: ${res.name}`, { icon, color });
+    logInfo(`🎯 Classe encontrada: ${res.name}`, { icone, cor });
 
     return {
       id: res.id,
-      name: res.name,
-      name_en: res.name,
-      icon,
-      color,
+      nome: res.name,
+      nome_en: res.name,
+      icone,
+      cor,
     };
   }
 
-  async getSpecData(
-    href: string
-  ): Promise<{
-    role?: "tank" | "healer" | "dps";
-    icon?: string;
-    name?: string;
+  async obterDadosEspecializacao(href: string): Promise<{
+    funcao?: "tank" | "healer" | "dps";
+    icone?: string;
+    nome?: string;
   }> {
-    if (this.specRoleCache.has(href)) {
-      const cached = this.specRoleCache.get(href);
-      logInfo(`📦 Role carregado do cache`, { href, role: cached });
-      return { role: cached };
+    if (this.cacheFuncaoPorSpec.has(href)) {
+      const cache = this.cacheFuncaoPorSpec.get(href);
+      logInfo(`📦 Função carregada do cache`, { href, cache });
+      return { funcao: cache };
     }
 
-    logInfo(`🔍 Buscando dados da spec`, { href });
+    logInfo(`🔍 Buscando dados da especialização`, { href });
 
-    // Busca o Spec
-    const specRes = await this.client.get<SpecResponse>(href, {
-      namespace: `static-${this.client.region}`,
+    const specRes = await this.cliente.get<SpecResponse>(href, {
+      namespace: `static-${this.cliente.region}`,
     });
 
-    const roleType = specRes.role?.type?.toLowerCase();
-    const role =
-      roleType === "tank"
+    const tipoFuncao = specRes.role?.type?.toLowerCase();
+    const funcao =
+      tipoFuncao === "tank"
         ? "tank"
-        : roleType === "healer"
+        : tipoFuncao === "healer"
         ? "healer"
-        : roleType === "damage"
+        : tipoFuncao === "damage"
         ? "dps"
         : undefined;
 
-    if (role) {
-      this.specRoleCache.set(href, role);
-      logInfo(`🎯 Role encontrado e salvo no cache`, { href, role });
+    if (funcao) {
+      this.cacheFuncaoPorSpec.set(href, funcao);
+      logInfo(`🎯 Função identificada e salva no cache`, { href, funcao });
     } else {
-      logInfo(`❓ Role não identificado`, { href, response: specRes });
+      logInfo(`❓ Função não identificada`, { href, resposta: specRes });
     }
 
-    // 🔥 Busca o media (ícone) da spec
-    const mediaHref = specRes.media?.key?.href;
-    let icon: string | undefined = undefined;
+    const hrefMedia = specRes.media?.key?.href;
+    let icone: string | undefined = undefined;
 
-    if (mediaHref) {
-      const mediaRes = await this.client.get<SpecMediaResponse>(mediaHref, {
-        namespace: `static-${this.client.region}`,
+    if (hrefMedia) {
+      const mediaRes = await this.cliente.get<SpecMediaResponse>(hrefMedia, {
+        namespace: `static-${this.cliente.region}`,
       });
-
-      icon = mediaRes.assets?.find((a) => a.key === "icon")?.value;
+      icone = mediaRes.assets?.find((a) => a.key === "icon")?.value;
     }
 
-    const name = specRes.name ?? undefined;
-
-    return { role, icon, name };
+    return { funcao, icone, nome: specRes.name };
   }
 
-  async getCompleteCharacterData(realm: string, name: string) {
-    logInfo(`🚀 Iniciando busca completa para ${name} - ${realm}`);
+  async obterDadosCompletosPersonagem(reino: string, nome: string) {
+    logInfo(`🚀 Iniciando busca completa para ${nome} - ${reino}`);
 
     try {
-      const [profile, avatar] = await Promise.all([
-        this.getCharacterProfile(realm, name),
-        this.getCharacterAvatar(realm, name),
+      const [perfil, avatar] = await Promise.all([
+        this.obterPerfilPersonagem(reino, nome),
+        this.obterAvatarPersonagem(reino, nome),
       ]);
 
-      const classData = await this.getClassData(profile.character_class.id);
-      const spec = profile.active_spec?.name || "";
-      const roleHref = profile.active_spec?.key?.href;
-      const specData = roleHref ? await this.getSpecData(roleHref) : {};
+      const dadosClasse = await this.obterClassePorId(
+        perfil.character_class.id
+      );
+      const nomeSpec = perfil.active_spec?.name || "";
+      const hrefSpec = perfil.active_spec?.key?.href;
+      const dadosSpec = hrefSpec
+        ? await this.obterDadosEspecializacao(hrefSpec)
+        : {};
 
-      const result = {
-        nome: profile.name,
-        realm: profile.realm.slug,
-        classe: classData.name,
-        classe_en: classData.name_en,
-        color: classData.color,
-        icon: classData.icon, // ícone da classe
-        spec: spec, // nome da spec
-        specIcon: specData.icon || "", // ícone da spec
-        role: specData.role, // role (tank, healer, dps)
-        level: profile.level,
+      const resultado = {
+        nome: perfil.name,
+        reino: perfil.realm.slug,
+        classe: dadosClasse.nome,
+        classe_en: dadosClasse.nome_en,
+        cor: dadosClasse.cor,
+        icone: dadosClasse.icone,
+        especializacao: nomeSpec,
+        iconeEspecializacao: dadosSpec.icone || "",
+        funcao: dadosSpec.funcao,
+        nivel: perfil.level,
         avatar: avatar ?? null,
-        ilvl: profile.equipped_item_level,
+        ilvl: perfil.equipped_item_level,
       };
 
-      logInfo(`✅ Dados completos para ${name} - ${realm}`, result);
+      logInfo(`✅ Dados completos para ${nome} - ${reino}`, resultado);
 
-      return result;
-    } catch (error) {
-      logError(`🔥 Erro ao buscar dados de ${name} - ${realm}`, error);
-      throw error;
+      return resultado;
+    } catch (erro) {
+      logError(`🔥 Erro ao buscar dados de ${nome} - ${reino}`, erro);
+      throw erro;
     }
   }
 
-  getClassColor(classe?: string): string {
+  obterCorClasse(classe?: string): string {
     if (!classe) return "#FFFFFF";
 
-    const sanitized = classe
+    const chave = classe
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[̀-\u036f]/g, "")
       .replace(/\s/g, "")
       .toLowerCase();
 
-    const map: Record<string, string> = {
+    const mapa: Record<string, string> = {
       guerreiro: "#C79C6E",
       paladino: "#F58CBA",
       cacador: "#ABD473",
@@ -175,8 +172,43 @@ export class BlizzardApi {
       conjurante: "#33937F",
     };
 
-    const color = map[sanitized] ?? "#FFFFFF";
-    logInfo(`🎨 Cor da classe ${classe}: ${color}`);
-    return color;
+    const cor = mapa[chave] ?? "#FFFFFF";
+    logInfo(`🎨 Cor da classe ${classe}: ${cor}`);
+    return cor;
+  }
+
+ async obterTodasAsClasses() {
+  const url = `https://${this.cliente.region}.api.blizzard.com/data/wow/playable-class/index`;
+
+  const data = await this.cliente.get<{
+    classes: { id: number; name: string; key: { href: string } }[];
+  }>(url, {
+    namespace: `static-${this.cliente.region}`,
+    locale: "pt_BR",
+  });
+
+  return data.classes.map((c) => ({
+    id: c.id,
+    name: c.name,
+    href: c.key.href,
+  }));
+}
+
+  async obterEspecializacoesPorClasseId(
+    classId: number
+  ): Promise<{ id: number; nome: string }[]> {
+    const url = `https://${this.cliente.region}.api.blizzard.com/data/wow/playable-class/${classId}`;
+
+    const resposta = await this.cliente.get<{
+      specializations: { id: number; name: string }[];
+    }>(url, {
+      namespace: `static-${this.cliente.region}`,
+      locale: "pt_BR",
+    });
+
+    return resposta.specializations.map((spec) => ({
+      id: spec.id,
+      nome: spec.name,
+    }));
   }
 }

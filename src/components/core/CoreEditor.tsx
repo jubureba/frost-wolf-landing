@@ -10,6 +10,318 @@ import { Checkbox } from "../ui/Checkbox";
 import { InputField } from "../ui/InputField";
 import { DiasHorarioSelector } from "../ui/DiasHorarioSelector";
 import { CardSkeleton } from "../shared/CardSkeleton";
+import { buscarPersonagemBlizzard } from "@/lib/services/buscarPersonagemBlizzard";
+import { SelectField } from "../ui/SelectField";
+
+type Especializacao = {
+  id: string;
+  name: string;
+  role: "tank" | "healer" | "dps";
+  icon: string;
+  href: string;
+};
+
+const classesSpecs: Record<string, Especializacao[]> = {
+  Guerreiro: [
+    {
+      id: "1",
+      name: "Armas",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "2",
+      name: "Fúria",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "3",
+      name: "Proteção",
+      role: "tank",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+  ],
+  Mago: [
+    {
+      id: "4",
+      name: "Arcano",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "5",
+      name: "Fogo",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "6",
+      name: "Gelo",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+  ],
+  Paladino: [
+    {
+      id: "7",
+      name: "Sagrado",
+      role: "healer",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "8",
+      name: "Proteção",
+      role: "tank",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "9",
+      name: "Retribuição",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+  ],
+  Druida: [
+    {
+      id: "10",
+      name: "Equilíbrio",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "11",
+      name: "Feral",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "12",
+      name: "Guardião",
+      role: "tank",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "13",
+      name: "Restauração",
+      role: "healer",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+  ],
+  Caçador: [
+    {
+      id: "14",
+      name: "Domínio das Feras",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "15",
+      name: "Precisão",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "16",
+      name: "Sobrevivência",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+  ],
+  Ladino: [
+    {
+      id: "17",
+      name: "Assassinato",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "18",
+      name: "Fora da Lei",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "19",
+      name: "Subterfúgio",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+  ],
+  Sacerdote: [
+    {
+      id: "20",
+      name: "Disciplina",
+      role: "healer",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "21",
+      name: "Sagrado",
+      role: "healer",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "22",
+      name: "Sombra",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+  ],
+  Bruxo: [
+    {
+      id: "23",
+      name: "Suplício",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "24",
+      name: "Demonologia",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "25",
+      name: "Destruição",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+  ],
+  Monge: [
+    {
+      id: "26",
+      name: "Tecelão da Névoa",
+      role: "healer",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "27",
+      name: "Mestre Cervejeiro",
+      role: "tank",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "28",
+      name: "Andarilho do Vento",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+  ],
+  "Caçador de Demônios": [
+    {
+      id: "29",
+      name: "Devastação",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "30",
+      name: "Vingança",
+      role: "tank",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+  ],
+  Xamã: [
+    {
+      id: "31",
+      name: "Elemental",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "32",
+      name: "Aperfeiçoamento",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "33",
+      name: "Restauração",
+      role: "healer",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+  ],
+  "Cavaleiro da Morte": [
+    {
+      id: "34",
+      name: "Sangue",
+      role: "tank",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "35",
+      name: "Gélido",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "36",
+      name: "Profano",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+  ],
+  Conjurante: [
+    {
+      id: "37",
+      name: "Devastação",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "38",
+      name: "Preservação",
+      role: "healer",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+    {
+      id: "39",
+      name: "Aprimoramento",
+      role: "dps",
+      icon: "spell_holy_powerwordshield",
+      href: "",
+    },
+  ],
+};
 
 export function CoreEditor({
   core,
@@ -48,6 +360,50 @@ export function CoreEditor({
   const [novoDiscord, setNovoDiscord] = useState("");
   const [novoBattletag, setNovoBattletag] = useState("");
   const [novoTwitch, setNovoTwitch] = useState("");
+  const [novoClasse, setNovoClasse] = useState("");
+
+  const [novoEspecializacao, setNovoEspecializacao] = React.useState("");
+  const [especializacoesDisponiveis, setEspecializacoesDisponiveis] = useState<
+    Especializacao[]
+  >([]);
+
+  const [novoFuncao, setNovoFuncao] = useState("");
+
+  // Busca personagem Blizzard e preenche campos + especializações fixas
+  const buscar = async () => {
+    try {
+      const dados = await buscarPersonagemBlizzard(novoRealm, novoNome);
+      console.log("dados retornados:", dados);
+
+      setNovoClasse(dados.classe);
+
+      const specsDaClasse = classesSpecs[dados.classe] || [];
+      setEspecializacoesDisponiveis(specsDaClasse);
+
+      // Supondo que o nome da especialização esteja em dados.specialization (exemplo: "Fúria")
+      const nomeEspecializacao = Array.isArray(dados.especializacao)
+        ? dados.especializacao[0]
+        : dados.especializacao || "";
+
+      const specEncontrada = specsDaClasse.find(
+        (s) => s.name.toLowerCase() === nomeEspecializacao.name.toLowerCase()
+      );
+
+      setNovoEspecializacao(specEncontrada ? specEncontrada.id : "");
+      setNovoFuncao(specEncontrada ? specEncontrada.role : "");
+    } catch (err) {
+      console.error("Erro ao buscar personagem:", err);
+      alert("Não foi possível carregar dados do personagem.");
+    }
+  };
+
+  const handleEspecializacaoChange = (id: string) => {
+    const spec = especializacoesDisponiveis.find((s) => s.id === id);
+    if (spec) {
+      setNovoEspecializacao(spec.name); // salva o nome, não o id
+      setNovoFuncao(spec.role);
+    }
+  };
 
   function limparCampos() {
     setNovoNome("");
@@ -55,7 +411,52 @@ export function CoreEditor({
     setNovoDiscord("");
     setNovoBattletag("");
     setNovoTwitch("");
+    setNovoClasse("");
+    setNovoEspecializacao("");
+    setEspecializacoesDisponiveis([]);
+    setNovoFuncao("");
     setEditIndex(null);
+  }
+
+  const player: Player = {
+    nome: novoNome.trim(),
+    realm: novoRealm.trim(),
+    discord: novoDiscord.trim() || undefined,
+    battletag: novoBattletag.trim() || undefined,
+    twitch: novoTwitch.trim() || undefined,
+    classe: novoClasse.trim() || undefined,
+    especializacao: novoEspecializacao.trim() || undefined,
+    especializacoesDisponiveis: especializacoesDisponiveis,
+    funcao: novoFuncao.trim() || undefined,
+  };
+
+  function editarJogador(index: number) {
+    const player = composicao[index];
+    setNovoNome(player.nome);
+    setNovoRealm(player.realm);
+    setNovoDiscord(player.discord ?? "");
+    setNovoBattletag(player.battletag ?? "");
+    setNovoTwitch(player.twitch ?? "");
+    setNovoFuncao(player.funcao ?? "");
+    setNovoClasse(player.classe ?? "");
+
+    const specsDaClasse = classesSpecs[player.classe ?? ""] || [];
+    setEspecializacoesDisponiveis(specsDaClasse);
+
+    // Seleciona a especialização atual pelo id, se existir
+    if (player.especializacao) {
+      // Tenta achar pelo nome da especialização atual
+      const spec = specsDaClasse.find(
+        (s) =>
+          s.name === player.especializacao || s.id === player.especializacao
+      );
+      setNovoEspecializacao(spec ? spec.id : "");
+    } else {
+      setNovoEspecializacao("");
+    }
+
+    setEditIndex(index);
+    setShowAddForm(true);
   }
 
   type DiasEHorario = {
@@ -82,8 +483,27 @@ export function CoreEditor({
     if (core?.dias) {
       preencherDiasEHorarios(core.dias);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [core]);
+
+  // Quando muda a classe manualmente, atualiza as specs fixas
+  useEffect(() => {
+    if (!novoClasse) {
+      setEspecializacoesDisponiveis([]);
+      setNovoEspecializacao("");
+      setNovoFuncao("");
+      return;
+    }
+
+    const specsDaClasse = classesSpecs[novoClasse] || [];
+    setEspecializacoesDisponiveis(specsDaClasse);
+
+    // Se a especialização atual não pertence mais à classe, limpa seleção
+    if (!specsDaClasse.find((s) => s.id === novoEspecializacao)) {
+      setNovoEspecializacao("");
+      setNovoFuncao("");
+    }
+  }, [novoClasse]);
 
   async function salvarTudo() {
     if (!nome.trim()) {
@@ -125,14 +545,6 @@ export function CoreEditor({
       return;
     }
 
-    const player: Player = {
-      nome: novoNome.trim(),
-      realm: novoRealm.trim(),
-      discord: novoDiscord.trim() || undefined,
-      battletag: novoBattletag.trim() || undefined,
-      twitch: novoTwitch.trim() || undefined,
-    };
-
     if (editIndex !== null) {
       const atualizada = [...composicao];
       atualizada[editIndex] = player;
@@ -165,17 +577,6 @@ export function CoreEditor({
         showToast("Jogador removido.", "info");
       },
     });
-  }
-
-  function editarJogador(index: number) {
-    const player = composicao[index];
-    setNovoNome(player.nome);
-    setNovoRealm(player.realm);
-    setNovoDiscord(player.discord ?? "");
-    setNovoBattletag(player.battletag ?? "");
-    setNovoTwitch(player.twitch ?? "");
-    setEditIndex(index);
-    setShowAddForm(true);
   }
 
   return (
@@ -429,6 +830,38 @@ export function CoreEditor({
                       label="Twitch"
                       value={novoTwitch}
                       onChange={(e) => setNovoTwitch(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Busca automática Blizzard */}
+                  {novoNome && novoRealm && (
+                    <div className="flex justify-end mt-2">
+                      <button onClick={buscar}>Buscar na Blizzard</button>
+                    </div>
+                  )}
+
+                  {/* Campos: Classe (readonly), Especialização (editável), Função (readonly) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-4">
+                    <InputField
+                      label="Classe"
+                      value={novoClasse}
+                      onChange={() => {}}
+                      disabled
+                    />
+
+                    <SelectField
+                      label="Especialização"
+                      value={novoEspecializacao}
+                      onChange={handleEspecializacaoChange}
+                      options={especializacoesDisponiveis}
+                      disabled={loading}
+                    />
+
+                    <InputField
+                      label="Função"
+                      value={novoFuncao}
+                      onChange={() => {}}
+                      disabled
                     />
                   </div>
 

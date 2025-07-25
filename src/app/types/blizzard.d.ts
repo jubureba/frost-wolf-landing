@@ -53,11 +53,11 @@ type CharacterProfileResponse = {
 type Jogador = {
   nome: string;
   realm: string;
-  role?: string;
+  funcao?: string;
   avatar?: string | null;
-  color?: string;
+  cor?: string;
   classe?: string | null;
-  spec?: string | null;
+  especializacao?: string | null;
   specIcon?: string | null;
   icon?: string | null;
   level?: number | null;

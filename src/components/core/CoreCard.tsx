@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  agruparPorRole,
   formatarDias,
   isMelee,
   isRanged,
@@ -12,7 +11,6 @@ import { Pencil, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfoCircle, faCalendarAlt, faBullseye, faCrosshairs, faUsers } from '@fortawesome/free-solid-svg-icons';
-
 
 export function CoreCard({
   core,
@@ -30,16 +28,22 @@ export function CoreCard({
   modoReordenacao?: boolean;
 }) {
   const jogadores = core?.composicaoAtual ?? [];
-    const algumJogadorIncompleto = jogadores.some(
-    (j) => !j.avatar || !j.classe || !j.spec || !j.ilvl
+  console.log("CoreCard - jogadores com funcao:", jogadores.map(j => ({ nome: j.nome, funcao: j.funcao })));
+
+
+  const algumJogadorIncompleto = jogadores.some(
+    (j) => !j.avatar || !j.classe || !j.especializacao || !j.ilvl
   );
 
   const loadingReal = loading || algumJogadorIncompleto;
 
-  const grouped = agruparPorRole(jogadores);
+  const grouped = {
+  tanks: jogadores.filter(j => j.funcao?.toLowerCase() === 'tank'),
+  healers: jogadores.filter(j => j.funcao?.toLowerCase() === 'healer'),
+  dps: jogadores.filter(j => j.funcao?.toLowerCase() === 'dps'),
+};
+  //const grouped = agruparPorRole(jogadores);
   const totalPlayers = jogadores.length;
-  //const grouped = agruparPorRole(core?.composicaoAtual ?? []);
-  //const totalPlayers = core?.composicaoAtual.length ?? 0;
 
   return (
     <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-6 sm:p-10 shadow-xl text-white font-nunito w-full flex flex-col">
@@ -107,49 +111,52 @@ export function CoreCard({
               whileTap={{ scale: 0.95 }}
               className="inline-flex items-center gap-2 rounded-lg border border-lime-500 px-5 py-3 text-lime-400 hover:bg-lime-500 hover:text-neutral-900 transition-colors duration-200 text-base font-semibold shadow-sm select-none"
             >
-              Quero me candidatar
+              Inscrever-se
             </motion.a>
           )}
         </div>
       </header>
 
       <div
-        className="grid grid-cols-2 gap-x-10 gap-y-6 text-sm text-gray-300 border border-neutral-700 pt-6 rounded-lg p-4" //fixo sticky top-0 z-10
+        className="grid grid-cols-2 gap-x-10 gap-y-6 text-sm text-gray-300 border border-neutral-700 pt-6 rounded-lg p-4"
         style={{ backgroundColor: "#121212" }}
       >
-          <CoreInfo
-    label={<><FontAwesomeIcon icon={faInfoCircle} className="mr-1" /> Informações gerais</>}
-    value={core?.informacoes}
-    loading={loading}
-    compact
-  />
-  <CoreInfo
-    label={<><FontAwesomeIcon icon={faCalendarAlt} className="mr-1" /> Dia/Hora</>}
-    value={formatarDias(core?.dias)}
-    loading={loading}
-    compact
-  />
-  <CoreInfo
-    label={<><FontAwesomeIcon icon={faBullseye} className="mr-1" /> Recrutando</>}
-    value={core?.precisaDe}
-    loading={loading}
-    compact
-  />
-  <CoreInfo
-    label={<><FontAwesomeIcon icon={faCrosshairs} className="mr-1" /> Luta Atual</>}
-    value={core?.bossAtual}
-    loading={loading}
-    compact
-  />
-  <CoreInfo
-    label={<><FontAwesomeIcon icon={faUsers} className="mr-1" /> Total de Players</>}
-    value={`${totalPlayers}`}
-    loading={loading}
-    compact
-  />
+        <CoreInfo
+          label={<><FontAwesomeIcon icon={faInfoCircle} className="mr-1" /> Informações gerais</>}
+          value={core?.informacoes}
+          loading={loading}
+          compact
+        />
+        <CoreInfo
+          label={<><FontAwesomeIcon icon={faCalendarAlt} className="mr-1" /> Dia/Hora</>}
+          value={formatarDias(core?.dias)}
+          loading={loading}
+          compact
+        />
+        <CoreInfo
+          label={<><FontAwesomeIcon icon={faBullseye} className="mr-1" /> Recrutando</>}
+          value={core?.precisaDe}
+          loading={loading}
+          compact
+        />
+        <CoreInfo
+          label={<><FontAwesomeIcon icon={faCrosshairs} className="mr-1" /> Luta Atual</>}
+          value={core?.bossAtual}
+          loading={loading}
+          compact
+        />
+        <CoreInfo
+          label={<><FontAwesomeIcon icon={faUsers} className="mr-1" /> Total de Players</>}
+          value={`${totalPlayers}`}
+          loading={loading}
+          compact
+        />
       </div>
 
       <section className="space-y-12 pt-10 flex-grow flex flex-col">
+        
+
+        {/* Grupos normais */}
         <CoreGrupo
           titulo="Tanks"
           cor="cyan"
@@ -167,14 +174,14 @@ export function CoreCard({
         <CoreGrupo
           titulo="DPS Melee"
           cor="pink"
-          jogadores={grouped.dps.filter((j) => isMelee(j.classe, j.spec))}
+          jogadores={grouped.dps.filter((j) => isMelee(j.classe, j.especializacao))}
           loading={loadingReal}
           icone="DPS-role.png"
         />
         <CoreGrupo
           titulo="DPS Ranged"
           cor="rose"
-          jogadores={grouped.dps.filter((j) => isRanged(j.classe, j.spec))}
+          jogadores={grouped.dps.filter((j) => isRanged(j.classe, j.especializacao))}
           loading={loadingReal}
           icone="DPS-role.png"
         />

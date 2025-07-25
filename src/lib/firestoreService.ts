@@ -18,16 +18,26 @@ export type Usuario = {
   core: string; // exemplo: "Core A"
 };
 
-// Tipagem do player
+export type Especializacao = {
+  id: string;  // use string para não ter conflito com o state que usa string
+  name: string;
+  role: "tank" | "healer" | "dps";
+  icon: string;
+  href: string;
+};
+
 export type Player = {
   nome: string;
   realm: string;
   discord?: string;
   battletag?: string;
   twitch?: string;
+  classe?: string;
+  especializacao?: string;
+  funcao?: string;
+  especializacoesDisponiveis?: Especializacao[]; // <-- torne opcional aqui
 };
 
-// Tipagem do core
 export type Core = {
   id: string;
   nome: string;
@@ -44,8 +54,8 @@ export type Core = {
   composicaoAtual: Player[];
   ordem?: number;
 };
-// FUNÇÕES DO USUARIO //
-// Cria ou atualiza o usuário no Firestore
+
+// FUNÇÕES DO USUÁRIO
 export const salvarOuAtualizarUsuario = async (
   uid: string,
   data: Partial<Usuario>
@@ -71,8 +81,7 @@ export const buscarUsuario = async (uid: string): Promise<Usuario | null> => {
   return userSnap.data() as Usuario;
 };
 
-// FUNÇÕES DO CORE //
-// 🔧 Função utilitária segura
+// SANITIZAÇÃO: remove especializacoesDisponiveis antes de salvar no Firestore
 export function sanitizePlayer(player: unknown): Player {
   if (typeof player !== "object" || player === null) {
     throw new Error("Player inválido");
@@ -85,11 +94,14 @@ export function sanitizePlayer(player: unknown): Player {
     realm: String(obj.realm ?? "").trim(),
     discord: obj.discord ? String(obj.discord).trim() : "",
     battletag: obj.battletag ? String(obj.battletag).trim() : "",
-    twitch: obj.twitch ? String(obj.twitch).trim() : "", // ✅ Incluído na sanitização
+    twitch: obj.twitch ? String(obj.twitch).trim() : "",
+    classe: obj.classe ? String(obj.classe).trim() : undefined,
+    especializacao: obj.especializacao ? String(obj.especializacao).trim() : undefined,
+    funcao: obj.funcao ? String(obj.funcao).trim() : undefined,
+    // REMOVE especializacoesDisponiveis para NÃO salvar no Firestore
   };
 }
 
-// 🔸 Buscar todos os cores
 export const getCores = async (): Promise<Core[]> => {
   const coresCollection = collection(db, "cores");
   const snapshot = await getDocs(coresCollection);
@@ -106,7 +118,6 @@ export const getCores = async (): Promise<Core[]> => {
     .sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0));
 };
 
-// 🔸 Atualizar dados de um core
 export const updateCoreField = async (
   coreId: string,
   data: Partial<Omit<Core, "id">>
@@ -114,6 +125,7 @@ export const updateCoreField = async (
   const coreRef = doc(db, "cores", coreId);
   const coreSnap = await getDoc(coreRef);
 
+  // Sanitiza composicaoAtual para remover campos indesejados
   const dataSanitizado = {
     ...data,
     composicaoAtual: data.composicaoAtual?.map(sanitizePlayer),
@@ -128,7 +140,6 @@ export const updateCoreField = async (
   }
 };
 
-// 🔸 Salvar um core inteiro
 export const saveCore = async (core: Core) => {
   const coreSanitizado: Core = {
     ...core,
@@ -137,12 +148,10 @@ export const saveCore = async (core: Core) => {
   await setDoc(doc(db, "cores", core.id), coreSanitizado);
 };
 
-// 🔸 Deletar um core
 export const deleteCore = async (nome: string) => {
   await deleteDoc(doc(db, "cores", nome));
 };
 
-// 🔸 Adicionar player no core
 export const addPlayerToCore = async (coreId: string, player: Player) => {
   const playerSanitizado = sanitizePlayer(player);
 
@@ -158,7 +167,6 @@ export const addPlayerToCore = async (coreId: string, player: Player) => {
   });
 };
 
-// 🔸 Adicionar player se não existir
 export const addPlayerIfNotExists = async (coreId: string, player: Player) => {
   const coreRef = doc(db, "cores", coreId);
   const coreSnap = await getDoc(coreRef);
@@ -182,7 +190,6 @@ export const addPlayerIfNotExists = async (coreId: string, player: Player) => {
   });
 };
 
-// 🔸 Remover player do core
 export const removePlayerFromCore = async (coreId: string, player: Player) => {
   const playerSanitizado = sanitizePlayer(player);
 
@@ -198,7 +205,6 @@ export const removePlayerFromCore = async (coreId: string, player: Player) => {
   });
 };
 
-// 🔸 Buscar dados do personagem via API interna
 export async function buscarDadosPersonagem(nome: string, realm: string) {
   const res = await fetch(`/api/personagem?nome=${nome}&realm=${realm}`);
   if (!res.ok) {
@@ -231,4 +237,21 @@ export const criarNovoCore = async (nome = "Novo Core"): Promise<Core> => {
   console.log(`✅ Core criado com ID ${id}`);
 
   return core;
+};
+
+export const buscarEspecializacaoPorNome = async (
+  nome: string
+): Promise<Especializacao | null> => {
+  const snapshot = await getDocs(
+    collection(db, "especializacoes")
+  );
+
+  for (const docSnap of snapshot.docs) {
+    const espec = docSnap.data() as Especializacao;
+    if (espec.name.toLowerCase() === nome.toLowerCase()) {
+      return espec;
+    }
+  }
+
+  return null;
 };

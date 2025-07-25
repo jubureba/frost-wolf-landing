@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const dados = await api.getCompleteCharacterData(realm, name);
+    const dados = await api.obterDadosCompletosPersonagem(realm, name);
     return NextResponse.json(dados, { status: 200 });
   } catch (err) {
     if (err instanceof BlizzardApiError) {

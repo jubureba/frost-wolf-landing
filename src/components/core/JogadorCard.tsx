@@ -11,7 +11,8 @@ const popoverVariants: Variants = {
   exit: { opacity: 0, y: 10, scale: 0.95 },
 };
 
-export function JogadorCard({ jogador, loading = false }: { jogador: Jogador; loading?: boolean }) {
+export function JogadorCard({ jogador, loading = false }: { jogador: Jogador; loading: boolean }) {
+  console.log("Renderizando JogadorCard:", jogador);
   const [position, setPosition] = useState<"top" | "left" | "right">("top");
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -44,29 +45,30 @@ export function JogadorCard({ jogador, loading = false }: { jogador: Jogador; lo
                   bg-[#121212] flex items-center justify-center
                   transition-transform duration-300 hover:scale-110 hover:shadow-lg"
                 >
-                  {loading ? (
-                    <div className="w-full h-full rounded-full shimmer"></div>
-                  ) : jogador.avatar ? (
-                    <Image
-                      src={jogador.avatar}
-                      alt={jogador.nome}
-                      width={56}
-                      height={56}
-                      className="object-cover w-full h-full"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[#666] text-xl font-bold">
-                      ?
-                    </div>
-                  )}
+{loading ? (
+  <div className="w-full h-full rounded-full shimmer"></div>
+) : jogador.avatar ? (
+  <Image
+    src={jogador.avatar}
+    alt={jogador.nome}
+    width={56}
+    height={56}
+    className="object-cover w-full h-full"
+    unoptimized
+  />
+) : (
+  <div className="w-full h-full flex items-center justify-center text-[#666] text-xl font-bold">
+    ?
+  </div>
+)}
+
                 </div>
 
                 {/* Nome e spec */}
                 <div className="mt-1 text-center w-full max-w-[72px]">
                   <p
                     className="text-[15px] truncate font-saira"
-                    style={{ color: jogador.color ?? "#e2e2e2" }}
+                    style={{ color: jogador.cor ?? "#e2e2e2" }}
                     title={jogador.nome}
                   >
                     {jogador.nome}
@@ -74,7 +76,7 @@ export function JogadorCard({ jogador, loading = false }: { jogador: Jogador; lo
 
                   <div className="flex justify-center items-center gap-1">
                     <p className="text-gray-400 text-[10px] font-roboto">
-                      {jogador.spec ?? "??"}
+                      {jogador.especializacao ?? "??"}
                     </p>
                   </div>
 
@@ -98,6 +100,8 @@ export function JogadorCard({ jogador, loading = false }: { jogador: Jogador; lo
     </li>
   );
 }
+
+
 
 function JogadorPopoverContent({
   jogador,
@@ -129,7 +133,7 @@ function JogadorPopoverContent({
       <div className="border-b border-neutral-700 pb-2">
         <p
           className="font-semibold text-xl truncate font-saira"
-          style={{ color: jogador.color ?? "#e2e2e2" }}
+          style={{ color: jogador.cor ?? "#e2e2e2" }}
           title={jogador.nome}
         >
           {jogador.nome} - {jogador.realm}
@@ -140,7 +144,7 @@ function JogadorPopoverContent({
             <div className="w-7 h-7 rounded-full border border-neutral-700 p-[2px] bg-black flex items-center justify-center">
               <Image
                 src={jogador.specIcon}
-                alt={jogador.spec ?? "Spec"}
+                alt={jogador.especializacao ?? "Spec"}
                 width={28}
                 height={28}
                 className="rounded-full"
@@ -149,7 +153,7 @@ function JogadorPopoverContent({
             </div>
           )}
           <span className="font-saira">
-            {jogador.spec} - {jogador.classe}
+            {jogador.especializacao} - {jogador.classe}
           </span>
         </div>
       </div>
@@ -158,8 +162,8 @@ function JogadorPopoverContent({
       <div className="grid grid-cols-2 gap-3 text-sm border border-neutral-800 rounded-xl p-3 bg-[#141414cc] shadow-inner">
         <InfoLabel label="Nível" value={jogador.level?.toString() ?? "??"} />
         <InfoLabel label="iLvl" value={jogador.ilvl?.toString() ?? "??"} />
-        <InfoLabel label="Role" value={jogador.role ?? "??"} />
-        <InfoLabel label="Spec" value={jogador.spec ?? "??"} />
+        <InfoLabel label="Role" value={jogador.funcao ?? "??"} />
+        <InfoLabel label="Spec" value={jogador.especializacao ?? "??"} />
       </div>
 
       {/* 📞 Contatos */}
