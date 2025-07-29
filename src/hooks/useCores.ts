@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { criarNovoCore, getCores, saveCore, deleteCore, Core } from "@/lib/firestoreService";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/shared/ToastContainer";
-import { logError } from "@/utils/logger";
 
 export function useCores() {
   const { user, role, coreId: userCoreId } = useAuth();
@@ -27,7 +26,7 @@ export function useCores() {
       await Promise.all(cores.map((core, index) => saveCore({ ...core, ordem: index })));
       return true;
     } catch (err) {
-      logError("Erro ao salvar nova ordem", err);
+      console.log("Erro ao salvar nova ordem", err);
       return false;
     }
   };
@@ -46,7 +45,7 @@ export function useCores() {
           showToast("Core removido com sucesso!", "info");
           if (editingCoreId === coreId) setEditingCoreId(null);
         } catch (err) {
-          logError("Erro ao remover core", err);
+          console.log("Erro ao remover core", err);
           showToast("Falha ao remover core.", "error");
         } finally {
           setLoadingRemocao(false);

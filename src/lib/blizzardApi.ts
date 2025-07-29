@@ -1,5 +1,4 @@
 import { BlizzardHttpClient } from "./BlizzardHttpClient";
-import { logInfo, logError } from "../utils/logger";
 
 export class BlizzardApi {
   private cacheFuncaoPorSpec = new Map<string, "tank" | "healer" | "dps">();
@@ -10,13 +9,13 @@ export class BlizzardApi {
     const url = `https://${
       this.cliente.region
     }.api.blizzard.com/profile/wow/character/${reino.toLowerCase()}/${nome.toLowerCase()}`;
-    logInfo(`🔍 Buscando perfil: ${nome} - ${reino}`, { url });
+    console.log(`🔍 Buscando perfil: ${nome} - ${reino}`, { url });
 
     const res = await this.cliente.get<CharacterProfileResponse>(url, {
       namespace: `profile-${this.cliente.region}`,
     });
 
-    logInfo(`✅ Perfil encontrado: ${nome} - ${reino}`, res);
+    console.log(`✅ Perfil encontrado: ${nome} - ${reino}`, res);
     return res;
   }
 
@@ -24,7 +23,7 @@ export class BlizzardApi {
     const url = `https://${
       this.cliente.region
     }.api.blizzard.com/profile/wow/character/${reino.toLowerCase()}/${nome.toLowerCase()}/character-media`;
-    logInfo(`🔍 Buscando avatar: ${nome} - ${reino}`, { url });
+    console.log(`🔍 Buscando avatar: ${nome} - ${reino}`, { url });
 
     const res = await this.cliente.get<CharacterMediaResponse>(url, {
       namespace: `profile-${this.cliente.region}`,
@@ -32,13 +31,13 @@ export class BlizzardApi {
 
     const avatar = res.assets?.find((a) => a.key === "avatar")?.value ?? null;
 
-    logInfo(`🎨 Avatar encontrado: ${nome} - ${reino}`, { avatar });
+    console.log(`🎨 Avatar encontrado: ${nome} - ${reino}`, { avatar });
     return avatar;
   }
 
   async obterClassePorId(idClasse: number) {
     const url = `https://${this.cliente.region}.api.blizzard.com/data/wow/playable-class/${idClasse}`;
-    logInfo(`🔍 Buscando dados da classe ID ${idClasse}`, { url });
+    console.log(`🔍 Buscando dados da classe ID ${idClasse}`, { url });
 
     const res = await this.cliente.get<ClassDataResponse>(url, {
       namespace: `static-${this.cliente.region}`,
@@ -47,7 +46,7 @@ export class BlizzardApi {
     const icone = res.media?.assets?.find((a) => a.key === "icon")?.value ?? "";
     const cor = this.obterCorClasse(res.name);
 
-    logInfo(`🎯 Classe encontrada: ${res.name}`, { icone, cor });
+    console.log(`🎯 Classe encontrada: ${res.name}`, { icone, cor });
 
     return {
       id: res.id,
@@ -65,11 +64,11 @@ export class BlizzardApi {
   }> {
     if (this.cacheFuncaoPorSpec.has(href)) {
       const cache = this.cacheFuncaoPorSpec.get(href);
-      logInfo(`📦 Função carregada do cache`, { href, cache });
+      console.log(`📦 Função carregada do cache`, { href, cache });
       return { funcao: cache };
     }
 
-    logInfo(`🔍 Buscando dados da especialização`, { href });
+    console.log(`🔍 Buscando dados da especialização`, { href });
 
     const specRes = await this.cliente.get<SpecResponse>(href, {
       namespace: `static-${this.cliente.region}`,
@@ -87,9 +86,9 @@ export class BlizzardApi {
 
     if (funcao) {
       this.cacheFuncaoPorSpec.set(href, funcao);
-      logInfo(`🎯 Função identificada e salva no cache`, { href, funcao });
+      console.log(`🎯 Função identificada e salva no cache`, { href, funcao });
     } else {
-      logInfo(`❓ Função não identificada`, { href, resposta: specRes });
+      console.log(`❓ Função não identificada`, { href, resposta: specRes });
     }
 
     const hrefMedia = specRes.media?.key?.href;
@@ -106,7 +105,7 @@ export class BlizzardApi {
   }
 
   async obterDadosCompletosPersonagem(reino: string, nome: string) {
-    logInfo(`🚀 Iniciando busca completa para ${nome} - ${reino}`);
+    console.log(`🚀 Iniciando busca completa para ${nome} - ${reino}`);
 
     try {
       const [perfil, avatar] = await Promise.all([
@@ -138,11 +137,11 @@ export class BlizzardApi {
         ilvl: perfil.equipped_item_level,
       };
 
-      logInfo(`✅ Dados completos para ${nome} - ${reino}`, resultado);
+      console.log(`✅ Dados completos para ${nome} - ${reino}`, resultado);
 
       return resultado;
     } catch (erro) {
-      logError(`🔥 Erro ao buscar dados de ${nome} - ${reino}`, erro);
+      console.log(`🔥 Erro ao buscar dados de ${nome} - ${reino}`, erro);
       throw erro;
     }
   }
@@ -173,7 +172,7 @@ export class BlizzardApi {
     };
 
     const cor = mapa[chave] ?? "#FFFFFF";
-    logInfo(`🎨 Cor da classe ${classe}: ${cor}`);
+    console.log(`🎨 Cor da classe ${classe}: ${cor}`);
     return cor;
   }
 

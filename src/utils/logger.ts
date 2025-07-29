@@ -1,13 +1,18 @@
+const LOG_ATIVO = false; // coloque true para reativar
+
 const getBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    return '';
-  }
+  if (typeof window !== 'undefined') return null;
   return process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 };
 
 const sendLog = async (level: 'info' | 'error', mensagem: string, dados?: unknown) => {
+  if (!LOG_ATIVO) return;
+
+  const baseUrl = getBaseUrl();
+  if (!baseUrl) return;
+
   try {
-    await fetch(`${getBaseUrl()}/api/log`, {
+    await fetch(`${baseUrl}/api/log`, {
       method: 'POST',
       body: JSON.stringify({ level, mensagem, dados }),
       headers: { 'Content-Type': 'application/json' },

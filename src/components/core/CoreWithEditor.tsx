@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { CoreCard } from "./CoreCard";
 import { CoreEditor } from "./CoreEditor";
 import { saveCore, Core } from "../../lib/firestoreService";
-import { logError } from "../../utils/logger";
+// import { logError } from "../../utils/logger"; // removido
 import { useFetchComposicao } from "../../hooks/useFetchComposicao";
 
 export function CoreWithEditor({
@@ -35,19 +35,15 @@ export function CoreWithEditor({
   const [core, setCore] = useState(coreOriginal);
   const [jogadoresNovos, setJogadoresNovos] = useState<Set<string>>(new Set());
 
- const { composicao, loading, setComposicao } = useFetchComposicao(
-  coreOriginal.composicaoAtual,
-  jogadoresNovos,
-  setJogadoresNovos
-);
-console.log("coreOriginal.composicaoAtual:", coreOriginal.composicaoAtual);
-console.log("composicao (do hook):", composicao);
-  /*
-useEffect(() => {
-  setCore(coreOriginal);
-  setComposicao(coreOriginal.composicaoAtual);
-}, [coreOriginal, setComposicao]);
-*/
+  const { composicao, loading, setComposicao } = useFetchComposicao(
+    coreOriginal.composicaoAtual,
+    jogadoresNovos,
+    setJogadoresNovos
+  );
+
+  console.log("coreOriginal.composicaoAtual:", coreOriginal.composicaoAtual);
+  console.log("composicao (do hook):", composicao);
+
   useEffect(() => {
     setComposicao(coreOriginal.composicaoAtual);
   }, [coreOriginal, setComposicao]);
@@ -86,13 +82,15 @@ useEffect(() => {
 
       setJogadoresNovos(novosSet);
     } catch (error) {
-      logError(`Erro ao salvar core`, error);
+      console.error("Erro ao salvar core", error); // substitui logError
     }
   }
 
   if (hideWhenEditing) return null;
-console.log("CoreWithEditor - composicao:", composicao);
-console.log("CoreWithEditor - loading:", loading);
+
+  console.log("CoreWithEditor - composicao:", composicao);
+  console.log("CoreWithEditor - loading:", loading);
+
   return (
     <div className="flex flex-col gap-2">
       {isEditing ? (
@@ -101,7 +99,7 @@ console.log("CoreWithEditor - loading:", loading);
             key={`${core.id}-${composicao.length}`}
             core={{
               ...core,
-              composicaoAtual: composicao, // ✅ Usa os dados atualizados
+              composicaoAtual: composicao,
               recrutando: core.recrutando ?? false,
             }}
             loading={loading}
@@ -122,7 +120,7 @@ console.log("CoreWithEditor - loading:", loading);
           key={`${core.id}-${composicao.length}`}
           core={{
             ...core,
-            composicaoAtual: composicao, // ✅ Usa os dados atualizados
+            composicaoAtual: composicao,
             recrutando: core.recrutando ?? false,
           }}
           loading={loading}
