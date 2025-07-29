@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-// 🔥 Função para gerar timestamp formatado
+const lastLogs = new Map<string, number>();
+const logDir = path.join(process.cwd(), "logs");
+
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true });
+}
+
 function getTimestamp() {
   const now = new Date();
   return now.toLocaleString("pt-BR", {
@@ -16,13 +22,10 @@ function getTimestamp() {
   });
 }
 
-// 🔥 Função para gerar linha formatada
 function formatLog(level: string, mensagem: string, dados?: unknown) {
   const separator = "==============================";
   const timestamp = getTimestamp();
-
   const dadosFormatados = dados ? JSON.stringify(dados, null, 2) : "";
-
   return `
 ${separator}
 [${timestamp}] [${level.toUpperCase()}]
@@ -44,32 +47,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const logDir = path.join(process.cwd(), "logs");
-    if (!fs.existsSync(logDir)) {
-      fs.mkdirSync(logDir);
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
+    const chave = `${ip}:${level}:${mensagem}`;
+    const agora = Date.now();
+    const ultima = lastLogs.get(chave);
+
+    if (ultima && agora - ultima < 5000) {
+      return NextResponse.json(
+        { warning: "Repetido, ignorado (5s cooldown)" },
+        { status: 429 }
+      );
     }
+
+    lastLogs.set(chave, agora);
 
     const logContent = formatLog(level, mensagem, dados);
     const logFile = path.join(logDir, `${level}.log`);
 
-    fs.appendFileSync(logFile, logContent);
-
-    // 🔥 Log no terminal, com cor
-    const color =
-      level === "error"
-        ? "\x1b[31m" // Vermelho
-        : level === "warn"
-        ? "\x1b[33m" // Amarelo
-        : "\x1b[32m"; // Verde para info
-
-    console.log(color + logContent + "\x1b[0m");
+    await fs.promises.appendFile(logFile, logContent);
 
     return NextResponse.json(
-      { status: "Log gravado com sucesso" },
+      { status: "Log salvo com sucesso" },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Erro ao processar log", error);
+    console.error("Erro ao salvar log:", error);
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }
