@@ -1,0 +1,8 @@
+{
+    "name": "worker-name",
+    "compatibility_date": "2025-07-30",
+    "main": "src/app/page.tsx",
+    "assets": {
+        "directory": "./dist"
+    }
+}
