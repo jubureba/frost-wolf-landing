@@ -2,14 +2,14 @@
   "name": "frost-wolf-landing",
   "version": "0.5.19",
   "private": true,
-"scripts": {
-  "dev": "next dev",
-  "build": "next build && next export",
-  "start": "next start",
-  "lint": "next lint",
-  "release": "standard-version",
-  "release:push": "npm run release && git push --follow-tags origin main"
-},
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "release": "standard-version",
+    "release:push": "npm run release && git push --follow-tags origin main"
+  },
   "engines": {
     "node": "22.x"
   },
