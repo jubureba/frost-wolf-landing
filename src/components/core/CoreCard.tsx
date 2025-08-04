@@ -67,21 +67,7 @@ export function CoreCard({
                   {core?.nome}
                 </h2>
 
-                {showEditor && onRemoveClick && core?.id && (
-                  <div className="group relative">
-                    <button
-                      onClick={() => onRemoveClick(core.id)}
-                      aria-label="Remover Core"
-                      className="text-red-500 hover:text-red-700 p-1 rounded-md transition-colors"
-                      type="button"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                    <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 text-xs bg-neutral-800 text-white px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                      Remover Core
-                    </div>
-                  </div>
-                )}
+      
               </div>
               {showEditor && onEditClick && (
                 <button
