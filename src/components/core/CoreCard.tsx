@@ -7,7 +7,7 @@ import {
 } from "@/lib/coreUtils";
 import { CoreGrupo } from "./CoreGrupo";
 import { CoreInfo } from "./CoreInfo";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { motion } from "framer-motion";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfoCircle, faCalendarAlt, faBullseye, faCrosshairs, faUsers } from '@fortawesome/free-solid-svg-icons';
@@ -16,7 +16,6 @@ export function CoreCard({
   core,
   loading,
   onEditClick,
-  onRemoveClick,
   showEditor,
   modoReordenacao = false,
 }: {
