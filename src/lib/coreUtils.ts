@@ -33,10 +33,10 @@ export function isRanged(classe?: string | null, spec?: string | null) {
     cls === "mago" ||
     cls === "bruxo" ||
     cls === "caçador" ||
-    (cls === "sacerdote" && sp === "sombrio") ||
+    (cls === "sacerdote" && sp === "sombra") ||
     (cls === "xamã" && sp === "elemental") ||
     (cls === "druida" && sp === "equilíbrio") ||
-    cls === "evocador"
+    cls === "conjurante"
   );
 }
 
